@@ -2199,6 +2199,7 @@ static void bag_pieces(GlPresent* v) {
 }
 
 static void xmenu_pieces(GlPresent* v);
+static int g_skill; static void skill_pieces(GlPresent* v);
 extern int g_comp_has3d;
 static int xm_field(void) { return in_adventure(); }   /* (not on the title: its own menus, its own picture) */
 /* Attributes, modern (as the menus' windows): on one dark window, the
@@ -3467,6 +3468,10 @@ static void canvas_layout_for(GlPresent* v, int ww, int wh, int second) {
             small[0] = small[1] = small[2] = small[3] = 0;
             big[0] = big[1] = big[2] = big[3] = 0;
             results_pieces(v, hub - 1);
+        } else if (g_skill && !second && !g_peek && v->npiece + 100 <= GL_MAX_PIECES) {
+            /* allocating skill points, modern: drawn again in windows over the field (skill_pieces()) */
+            small[0] = small[1] = small[2] = small[3] = 0;
+            skill_pieces(v);
         } else if (g_xmenu && xm_field() && !second && v->npiece + 44 <= GL_MAX_PIECES) {   /* (over the field: not the title's menus, its own picture) */
             small[0] = small[1] = small[2] = small[3] = 0;
             xmenu_pieces(v);
@@ -5810,6 +5815,113 @@ static void menu_icons_update(void) {
  * apart): its panel and line of the modern style, its name and lines (light
  * letters, the hand kept), the chosen one lit to its column's end; the box
  * at the bottom where it was, of the style; the path above. */
+/* ---- Allocating skill points, modern ----
+ * The game's screen (the touch screen: its title, the vocation's five
+ * skills with the points added and their totals, Confirm and the points
+ * left, the character's stats; the top screen: the chosen skill's table)
+ * drawn again for the PC in windows of the modern style over the field: at
+ * the top the title and who, at the left the skills (each with a bar of its
+ * points, 0 to 100, the added ones lit), Confirm under them, at the right
+ * the skill's table, at the bottom the stats in one row. The numbers come
+ * from the game's own screen object (found in RAM: its points to give, the
+ * most (100), the five totals and added points, the member's record and
+ * the five skills); the words are the game's (its pixels). */
+/* (g_skill declared above) */                                                /* up (skill_update()) */
+static uint32_t g_sk_at;                                           /* the game's object (main RAM offset), 0 none */
+#define SK_PARTY 0x0F3888u
+#define SK_GAP 0x964u
+static uint32_t sk32(uint32_t a) { uint32_t v; memcpy(&v, &g_main_ram[a & (MAIN_RAM_SIZE - 4)], 4); return v; }
+static int sk_ok(uint32_t a) {                                     /* its fields as the game keeps them */
+    if (!a || a + 0x80 > MAIN_RAM_SIZE) return 0;
+    uint32_t give = sk32(a + 0x34), left = sk32(a + 0x38), rec = sk32(a + 0x70), row = sk32(a + 0x28);
+    if (sk32(a + 0x3C) != 100 || give > 999 || left > give || row > 5) return 0;
+    if (rec < 0x02000000u + SK_PARTY || rec > 0x02000000u + SK_PARTY + 3 * SK_GAP || (rec - 0x02000000u - SK_PARTY) % SK_GAP) return 0;
+    for (int i = 0; i < 5; i++) {
+        uint32_t t = sk32(a + 0x40 + 4 * i), d = sk32(a + 0x54 + 4 * i);
+        if (t > 100 || d > 100 || t + d > 100) return 0;
+    }
+    return 1;
+}
+static void skill_update(int a_on_top) {
+    g_skill = 0;
+    if (a_on_top || g_classic || g_winstyle != 2 || !in_adventure() || party_in_battle()) return;
+    const uint32_t* px = g_engine_out[0];
+    #define SK_PX(x, y) (px[(y) * 256 + (x)] & 0xFFFFFF)
+    for (int i = 0; i < 3; i++) {                                 /* its title's window across the screen, the line between the skills and their numbers */
+        static const int xs[3] = { 12, 128, 240 };
+        if ((SK_PX(xs[i], 1) != 0x828282 && SK_PX(xs[i], 1) != 0xA2A2A2) || (SK_PX(xs[i], 16) != 0x828282 && SK_PX(xs[i], 16) != 0xA2A2A2)) return;
+    }
+    if (SK_PX(98, 30) != 0xFBFBFB || SK_PX(98, 70) != 0xFBFBFB) return;
+    #undef SK_PX
+    if (!sk_ok(g_sk_at)) {                                        /* (found again: the heap's) */
+        g_sk_at = 0;
+        for (uint32_t a = 0x100000; a + 0x80 <= MAIN_RAM_SIZE && !g_sk_at; a += 4)
+            if (sk32(a + 0x3C) == 100 && sk_ok(a)) g_sk_at = a;
+        if (!g_sk_at) return;
+    }
+    g_skill = 1;
+}
+static void skill_pieces(GlPresent* v) {
+    const uint32_t a = g_sk_at, *bp = g_engine_out[0];
+    const float t = 0.75f, kr = 0.72f, ks = 0.6f, X0 = 10, W = v->cw - 20;
+    #define SK_WIN(X_, Y_, W_, H_) do { set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), X_, Y_, W_, H_); \
+        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, Y_, W_, t); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, (Y_) + (H_) - t, W_, t); \
+        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, Y_, t, H_); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), (X_) + (W_) - t, Y_, t, H_); } while (0)
+    int row = (int)sk32(a + 0x28), confirm = (bp[102 * 256 + 128] & 0xFFFFFF) == 0x828282 || (bp[102 * 256 + 128] & 0xFFFFFF) == 0xA2A2A2;
+    /* the title (its words alone: where its letters are) and who, their level */
+    int tx0 = 246, tx1 = 9;
+    for (int y = 3; y < 15; y++) for (int x = 10; x < 246; x++) if ((bp[y * 256 + x] & 0xFFFFFF) == 0xFBFBFB) { if (x < tx0) tx0 = x; if (x > tx1) tx1 = x; }
+    float y = 7, hh = 17;
+    SK_WIN(X0, y, W, hh);
+    if (tx1 > tx0) bestiary_piece(v, 3, tx0 - 1, 3, tx1 - tx0 + 3, 12, 30, X0 + 8, y + 2.5f, 1);
+    bestiary_piece(v, 3, 11, 107, 114, 12, 30, X0 + W - 8 - 114, y + 2.5f, 1);
+    /* the skills: each its name, its bar, the points added (the game's arrows round them), its total */
+    float y1 = y + hh + 4, LW = 184, pitch = 13, lh = 5 * pitch + 8, sh = 2 + 2 * 12 * ks + 6;
+    SK_WIN(X0, y1, LW, lh);
+    if (row < 5)                                                  /* the chosen one lit (three times: seen over a bright field too) */
+        for (int i = 0; i < 3; i++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), X0 + 4, y1 + 4 + row * pitch, LW - 8, pitch);
+    for (int i = 0; i < 5; i++) {
+        float ry = y1 + 4 + i * pitch, cy = ry + (pitch - 13 * kr) / 2;
+        int sy = 20 + 13 * i;
+        bestiary_piece(v, 3, 18, sy, 79, 13, 30, X0 + 8, cy, kr);                 /* its name */
+        uint32_t tot = sk32(a + 0x40 + 4 * i), add = sk32(a + 0x54 + 4 * i);
+        float bx = X0 + 68, bw = 30, by = ry + pitch / 2 - 2.5f, bh = 5;           /* its bar: 0 to 100, its total, the added points lit */
+        for (int k = 0; k < 2; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), bx, by, bw, bh);   /* (its groove: dark, a thin grey line round it) */
+        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by, bw, t); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by + bh - t, bw, t);
+        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by, t, bh); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx + bw - t, by, t, bh);
+        if (tot) for (int k = 0; k < 4; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t, by + t, (bw - 2 * t) * (float)tot / 100.0f, bh - 2 * t);
+        if (add) for (int k = 0; k < 7; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t + (bw - 2 * t) * (float)tot / 100.0f, by + t, (bw - 2 * t) * (float)add / 100.0f, bh - 2 * t);
+        bestiary_piece(v, 3, 100, sy, 46, 13, 30, X0 + 101, cy, kr);               /* the points added, the arrows */
+        bestiary_piece(v, 3, 156, sy, 64, 13, 30, X0 + LW - 4 - 64 * kr, cy, kr);   /* its total (and the new one after an arrow, points added) */
+    }
+    if (row < 5) bestiary_piece(v, 3, 0, 20 + 13 * row, 20, 13, 27, X0 - 7, y1 + 4 + row * pitch + (pitch - 13 * kr) / 2, kr);   /* the hand: its own colours, over the window's left line */
+    float cy1 = y1 + lh + 4;
+    if (confirm) {                                                /* Confirm, the points left */
+        SK_WIN(X0, cy1, LW, 16);
+        if (row == 5) {
+            for (int i = 0; i < 3; i++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), X0 + 4, cy1 + 2, LW - 8, 12);
+            bestiary_piece(v, 3, 0, 88, 20, 13, 27, X0 - 7, cy1 + 2, kr);
+        }
+        bestiary_piece(v, 3, 16, 89, 228, 12, 30, X0 + 12, cy1 + 3, kr);
+    }
+    /* the stats under them: in one row, each its name over its number */
+    float ys = cy1 + (confirm ? 16 + 4 : 0), mh = ys + sh - y1;
+    SK_WIN(X0, ys, LW, sh);
+    for (int j = 0; j < 5; j++) {
+        float cx = X0 + 2 + (LW - 4) * j / 5, cw = (LW - 4) / 5;
+        bestiary_piece(v, 3, 12, 126 + 13 * j, 48, 12, 30, cx + 3, ys + 2, ks);
+        bestiary_piece(v, 3, 60, 126 + 13 * j, 54, 12, 30, cx + cw - 3 - 54 * ks, ys + 4 + 12 * ks, ks);
+    }
+    /* the skill's table (the top screen) at the right, as big as the space there */
+    {   float px0 = X0 + LW + 4, pw = W - LW - 4, k = fminf((pw - 8) / 232.0f, (mh - 8) / 168.0f);
+        SK_WIN(px0, y1, pw, mh);
+        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), px0, y1, pw, mh);   /* (darker: its greyed lines read too) */
+        bestiary_piece(v, 0, 12, 12, 232, 168, 32, px0 + (pw - 232 * k) / 2, y1 + (mh - 168 * k) / 2, k);   /* (32: its letters, white and grey, its icons; not its dark panel) */
+    }
+    #undef SK_WIN
+    v->round[2] = 0;                                              /* (the minimap: not the skill's table in it) */
+}
+
 static void xmenu_pieces(GlPresent* v) {
     float wx, wy, t = 0.75f, X = (v->cw - 256) / 2;
     xm_place(v->cw, &wx, &wy);
@@ -6071,6 +6183,9 @@ static void present_gl(void) {
     shop_update((pow >> 15) & 1);
     bag_update((pow >> 15) & 1);
     xmenu_update((pow >> 15) & 1);
+    skill_update((pow >> 15) & 1);
+    {   static int was; if (g_skill != was) { fprintf(stderr, "skill screen: %d frame %llu\n", g_skill, (unsigned long long)g_frame); was = g_skill; } }   /* (tests) */
+    if (g_skill) g_xmenu = 0;                                     /* (its windows: not the X menu's) */
     menu_icons_update();
     pop_update((pow >> 15) & 1);
     creation_update((pow >> 15) & 1);
@@ -6090,7 +6205,7 @@ static void present_gl(void) {
     }
     name_typing_step((pow >> 15) & 1);
     gl_set_top_cut(g_pop_win[2] && !g_quest_page && !g_card_page && !g_accolade_page);
-    gl_set_split(g_shop || g_bag || (g_xmenu && xm_field()) || results_hub());   /* (Sandy's page: her 3D apart from her page) */
+    gl_set_split(g_shop || g_bag || g_skill || (g_xmenu && xm_field()) || results_hub());   /* (Sandy's page: her 3D apart from her page) */
     {   /* between two of our menus' layouts (one window closing, the next not yet found), the
          * game's own windows on the field a few frames: the last picture kept instead (up to 10 frames);
          * DQIX_RAWCHK: the frames where they show all the same */
