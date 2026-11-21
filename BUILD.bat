@@ -57,7 +57,7 @@ if defined DQIX_PROGRESS echo progress 0.08 Checking the build tools
 echo Checking the build tools (the first time downloads them)...
 rem cc-libs pins gcc's runtime libraries: it has to move with gcc, or a newer gcc (or numpy,
 rem which needs the newer libgcc) cannot be installed and the whole line fails
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Sy --noconfirm --needed make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Sy --noconfirm --needed make diffutils mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
 if errorlevel 1 echo WARNING: the build tools could not be updated; building with the ones already installed.
 rem optional (townspeople in 3D): on its own, so that without it, or offline, nothing else changes
 "%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-python-numpy"
