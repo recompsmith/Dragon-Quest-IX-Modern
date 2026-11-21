@@ -14,7 +14,9 @@ if not exist "%MSYSROOT%\usr\bin\bash.exe" (
   exit /b 1
 )
 echo Installing build tools ^(first time only^)...
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Sy --noconfirm --needed make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
 set MSYSTEM=UCRT64
 set CHERE_INVOKING=1
 "%MSYSROOT%\usr\bin\bash.exe" -lc "./build-windows.sh"
