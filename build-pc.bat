@@ -14,9 +14,10 @@ if not exist "%MSYSROOT%\usr\bin\bash.exe" (
   exit /b 1
 )
 echo Installing build tools ^(first time only^)...
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm"
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm"
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
+tasklist /FI "IMAGENAME eq pacman.exe" 2>nul | find /i "pacman.exe" >nul || if exist "%MSYSROOT%\var\lib\pacman\db.lck" del /f /q "%MSYSROOT%\var\lib\pacman\db.lck"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm --ignore mingw-w64-ucrt-x86_64-SDL2,mingw-w64-ucrt-x86_64-sdl2-compat"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm --ignore mingw-w64-ucrt-x86_64-SDL2,mingw-w64-ucrt-x86_64-sdl2-compat"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed make diffutils mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
 set MSYSTEM=UCRT64
 set CHERE_INVOKING=1
 "%MSYSROOT%\usr\bin\bash.exe" -lc "./build-windows.sh"
