@@ -2199,7 +2199,7 @@ static void bag_pieces(GlPresent* v) {
 }
 
 static void xmenu_pieces(GlPresent* v);
-static int g_skill; static void skill_pieces(GlPresent* v);
+static int g_skill; static void skill_pieces(GlPresent* v, int ww, int wh);
 extern int g_comp_has3d;
 static int xm_field(void) { return in_adventure(); }   /* (not on the title: its own menus, its own picture) */
 /* Attributes, modern (as the menus' windows): on one dark window, the
@@ -3471,7 +3471,7 @@ static void canvas_layout_for(GlPresent* v, int ww, int wh, int second) {
         } else if (g_skill && !second && !g_peek && v->npiece + 100 <= GL_MAX_PIECES) {
             /* allocating skill points, modern: drawn again in windows over the field (skill_pieces()) */
             small[0] = small[1] = small[2] = small[3] = 0;
-            skill_pieces(v);
+            skill_pieces(v, ww, wh);
         } else if (g_xmenu && xm_field() && !second && v->npiece + 44 <= GL_MAX_PIECES) {   /* (over the field: not the title's menus, its own picture) */
             small[0] = small[1] = small[2] = small[3] = 0;
             xmenu_pieces(v);
@@ -5861,64 +5861,88 @@ static void skill_update(int a_on_top) {
     }
     g_skill = 1;
 }
-static void skill_pieces(GlPresent* v) {
+static void skill_pieces(GlPresent* v, int ww, int wh) {
+    /* in the mockup's units (maquette-repartition-points-v7: 1932 x 1152), as Equip's: the game's letters as big as its list's */
     const uint32_t a = g_sk_at, *bp = g_engine_out[0];
-    const float t = 0.75f, kr = 0.72f, ks = 0.6f, X0 = 10, W = v->cw - 20;
-    #define SK_WIN(X_, Y_, W_, H_) do { set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), X_, Y_, W_, H_); \
-        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, Y_, W_, t); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, (Y_) + (H_) - t, W_, t); \
-        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), X_, Y_, t, H_); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), (X_) + (W_) - t, Y_, t, H_); } while (0)
+    const float C = fminf(v->ch / 1152.0f, v->cw / 1932.0f), mid = v->cw / 2, oy = (v->ch - 1152 * C) / 2, KL = 4.04f * C, t = 0.75f;
+#define SX(m) (mid + ((m) - 966) * C)
+#define SY(m) (oy + (m) * C)
+#define SK_LINE(X_, Y_, W_) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), SX(X_), SY(Y_), (W_) * C, t)
     int row = (int)sk32(a + 0x28), confirm = (bp[102 * 256 + 128] & 0xFFFFFF) == 0x828282 || (bp[102 * 256 + 128] & 0xFFFFFF) == 0xA2A2A2;
-    /* the title (its words alone: where its letters are) and who, their level */
+    /* the title, who (their job's plaque, their name and level) */
+    modern_window(v, SX(50), SY(36), 1832 * C, 104 * C);
     int tx0 = 246, tx1 = 9;
     for (int y = 3; y < 15; y++) for (int x = 10; x < 246; x++) if ((bp[y * 256 + x] & 0xFFFFFF) == 0xFBFBFB) { if (x < tx0) tx0 = x; if (x > tx1) tx1 = x; }
-    float y = 7, hh = 17;
-    SK_WIN(X0, y, W, hh);
-    if (tx1 > tx0) bestiary_piece(v, 3, tx0 - 1, 3, tx1 - tx0 + 3, 12, 30, X0 + 8, y + 2.5f, 1);
-    bestiary_piece(v, 3, 11, 107, 114, 12, 30, X0 + W - 8 - 114, y + 2.5f, 1);
-    /* the skills: each its name, its bar, the points added (the game's arrows round them), its total */
-    float y1 = y + hh + 4, LW = 184, pitch = 13, lh = 5 * pitch + 8, sh = 2 + 2 * 12 * ks + 6;
-    SK_WIN(X0, y1, LW, lh);
-    if (row < 5)                                                  /* the chosen one lit (three times: seen over a bright field too) */
-        for (int i = 0; i < 3; i++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), X0 + 4, y1 + 4 + row * pitch, LW - 8, pitch);
+    if (tx1 > tx0) bestiary_piece(v, 3, tx0 - 1, 3, tx1 - tx0 + 3, 12, 30, SX(84), SY(88) - 6 * KL, KL);
+    /* who: their name, their job's sign, their level (the game's) */
+    bestiary_piece(v, 3, 11, 107, 114, 12, 30, SX(1848) - 114 * KL, SY(88) - 6 * KL, KL);
+    /* the skills: each its name, its bar (0 to 100, the added points lit), the points added (the game's arrows round them), its total */
+    modern_window(v, SX(50), SY(166), 980 * C, 470 * C);
+    SK_LINE(66, 232, 948);
     for (int i = 0; i < 5; i++) {
-        float ry = y1 + 4 + i * pitch, cy = ry + (pitch - 13 * kr) / 2;
+        float y = 240 + i * 78, cy = SY(y + 39) - 6.5f * KL;
         int sy = 20 + 13 * i;
-        bestiary_piece(v, 3, 18, sy, 79, 13, 30, X0 + 8, cy, kr);                 /* its name */
+        if (i) SK_LINE(66, y, 948);
+        if (i == row) for (int k = 0; k < 3; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(58), SY(y + 4), 964 * C, 70 * C);
+        bestiary_piece(v, 3, 18, sy, 79, 13, 30, SX(90), cy, KL);
         uint32_t tot = sk32(a + 0x40 + 4 * i), add = sk32(a + 0x54 + 4 * i);
-        float bx = X0 + 68, bw = 30, by = ry + pitch / 2 - 2.5f, bh = 5;           /* its bar: 0 to 100, its total, the added points lit */
-        for (int k = 0; k < 2; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), bx, by, bw, bh);   /* (its groove: dark, a thin grey line round it) */
+        float bx = SX(290), bw = 200 * C, by = SY(y + 31), bh = 16 * C;
+        for (int k = 0; k < 2; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), bx, by, bw, bh);
         set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by, bw, t); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by + bh - t, bw, t);
-        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx, by, t, bh); set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), bx + bw - t, by, t, bh);
-        if (tot) for (int k = 0; k < 4; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t, by + t, (bw - 2 * t) * (float)tot / 100.0f, bh - 2 * t);
-        if (add) for (int k = 0; k < 7; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t + (bw - 2 * t) * (float)tot / 100.0f, by + t, (bw - 2 * t) * (float)add / 100.0f, bh - 2 * t);
-        bestiary_piece(v, 3, 100, sy, 46, 13, 30, X0 + 101, cy, kr);               /* the points added, the arrows */
-        bestiary_piece(v, 3, 156, sy, 64, 13, 30, X0 + LW - 4 - 64 * kr, cy, kr);   /* its total (and the new one after an arrow, points added) */
+        if (tot) for (int k = 0; k < 6; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t, by + t, (bw - 2 * t) * (float)tot / 100.0f, bh - 2 * t);
+        if (add) for (int k = 0; k < 10; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), bx + t + (bw - 2 * t) * (float)tot / 100.0f, by + t, (bw - 2 * t) * (float)add / 100.0f, bh - 2 * t);
+        bestiary_piece(v, 3, 100, sy, 46, 13, 30, SX(600) - 23 * KL, cy, KL);
+        bestiary_piece(v, 3, 156, sy, 64, 13, 30, SX(1010) - 64 * KL, cy, KL);
     }
-    if (row < 5) bestiary_piece(v, 3, 0, 20 + 13 * row, 20, 13, 27, X0 - 7, y1 + 4 + row * pitch + (pitch - 13 * kr) / 2, kr);   /* the hand: its own colours, over the window's left line */
-    float cy1 = y1 + lh + 4;
-    if (confirm) {                                                /* Confirm, the points left */
-        SK_WIN(X0, cy1, LW, 16);
+    if (row < 5) bestiary_piece(v, 3, 0, 20 + 13 * row, 20, 13, 27, SX(16), SY(240 + row * 78 + 39) - 6.5f * KL, KL);   /* the hand: its own colours, over the window's left line */
+    /* Confirm, the points left */
+    modern_window(v, SX(50), SY(656), 980 * C, 100 * C);
+    if (confirm) {
         if (row == 5) {
-            for (int i = 0; i < 3; i++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), X0 + 4, cy1 + 2, LW - 8, 12);
-            bestiary_piece(v, 3, 0, 88, 20, 13, 27, X0 - 7, cy1 + 2, kr);
+            for (int k = 0; k < 3; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(58), SY(662), 964 * C, 88 * C);
+            bestiary_piece(v, 3, 0, 88, 20, 13, 27, SX(16), SY(706) - 6.5f * KL, KL);
         }
-        bestiary_piece(v, 3, 16, 89, 228, 12, 30, X0 + 12, cy1 + 3, kr);
+        bestiary_piece(v, 3, 16, 89, 228, 12, 30, SX(70), SY(706) - 6 * KL, KL * 0.95f);
     }
-    /* the stats under them: in one row, each its name over its number */
-    float ys = cy1 + (confirm ? 16 + 4 : 0), mh = ys + sh - y1;
-    SK_WIN(X0, ys, LW, sh);
+    /* the stats: who, then each its name over its number */
+    modern_window(v, SX(50), SY(776), 980 * C, 160 * C);
+    bestiary_piece(v, 3, 11, 107, 114, 12, 30, SX(84), SY(816) - 6 * KL * 0.85f, KL * 0.85f);
+    SK_LINE(66, 842, 948);
     for (int j = 0; j < 5; j++) {
-        float cx = X0 + 2 + (LW - 4) * j / 5, cw = (LW - 4) / 5;
-        bestiary_piece(v, 3, 12, 126 + 13 * j, 48, 12, 30, cx + 3, ys + 2, ks);
-        bestiary_piece(v, 3, 60, 126 + 13 * j, 54, 12, 30, cx + cw - 3 - 54 * ks, ys + 4 + 12 * ks, ks);
+        float cx = 50 + 98 + 196 * j;
+        bestiary_piece(v, 3, 12, 126 + 13 * j, 48, 12, 30, SX(cx) - 24 * KL * 0.85f, SY(850), KL * 0.85f);
+        bestiary_piece(v, 3, 60, 126 + 13 * j, 54, 12, 30, SX(cx) - 27 * KL, SY(880), KL);
     }
-    /* the skill's table (the top screen) at the right, as big as the space there */
-    {   float px0 = X0 + LW + 4, pw = W - LW - 4, k = fminf((pw - 8) / 232.0f, (mh - 8) / 168.0f);
-        SK_WIN(px0, y1, pw, mh);
-        set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), px0, y1, pw, mh);   /* (darker: its greyed lines read too) */
-        bestiary_piece(v, 0, 12, 12, 232, 168, 32, px0 + (pw - 232 * k) / 2, y1 + (mh - 168 * k) / 2, k);   /* (32: its letters, white and grey, its icons; not its dark panel) */
+    /* the skill's table (the top screen) at the right, as big as its window */
+    {   modern_window(v, SX(1050), SY(166), 832 * C, 770 * C);
+        float k = fminf(KL, fminf(802 * C / 232.0f, 740 * C / 168.0f));   /* (as big as the list's letters when it can) */
+        bestiary_piece(v, 0, 12, 12, 232, 168, 32, SX(1466) - 116 * k, SY(551) - 84 * k, k);   /* (32: its letters, white and grey, its icons) */
     }
-    #undef SK_WIN
+    {   /* the keys (keybar.c), under them */
+        static const char* const sk[5] = { "Skill", "Comp\xC3\xA9tence", "Fertigkeit", "Abilit\xC3\xA0", "Habilidad" };
+        static const char* const ad[5] = { "Add a point", "Ajouter un point", "Punkt hinzuf\xC3\xBCgen", "Aggiungi un punto", "A\xC3\xB1" "adir un punto" };
+        static const char* const rm[5] = { "Remove a point", "Retirer un point", "Punkt entfernen", "Togli un punto", "Quitar un punto" };
+        static const char* const ok[5] = { "Confirm", "Confirmer", "Best\xC3\xA4tigen", "Conferma", "Confirmar" };
+        static const char* const ca[5] = { "Cancel", "Annuler", "Abbrechen", "Annulla", "Cancelar" };
+        static const int act[5] = { CA_UP, CA_RIGHT, CA_LEFT, CA_A, CA_B };
+        static const char* const* what[5] = { sk, ad, rm, ok, ca };
+        int lg = g_fw_language >= 1 && g_fw_language <= 5 ? g_fw_language - 1 : 0;
+        KeybarEntry k[5]; memset(k, 0, sizeof k);
+        for (int i = 0; i < 5; i++) { if (!action_sign(act[i], 0, &k[i].style, &k[i].face, k[i].key, sizeof k[i].key)) k[i].key[0] = 0; k[i].what = what[i][lg]; }
+        const float U = C * 1152.0f / 1080.0f;                    /* (keybar.c's units: a 1920 x 1080 screen's pixels) */
+        float s = fminf(g_lay_s > 0 ? g_lay_s : 5.625f, 11.25f);
+        int pw, ph, ch; static float wu, hu; static int shown;
+        if (ww > 1 && wh > 1) {                                   /* (a layout for the mouse alone (1 x 1): the picture kept, its place as before) */
+            const uint8_t* pic = keybar_picture(k, 5, U * s, &pw, &ph, &wu, &hu, &ch);
+            if (pic && (ch || !g_keybar_up)) gl_set_layer(GL_LAYER_KEYBAR, pic, pw, ph);
+            shown = pic != NULL;
+            if (pic) g_keybar_up = 1;
+        }
+        if (shown && g_keybar_up) { float* q = v->layer[GL_LAYER_KEYBAR]; q[0] = SX(50); q[1] = SY(956); q[2] = wu * U; q[3] = hu * U; }
+    }
+#undef SK_LINE
+#undef SX
+#undef SY
     v->round[2] = 0;                                              /* (the minimap: not the skill's table in it) */
 }
 
