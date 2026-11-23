@@ -473,9 +473,11 @@ static void t_exe(void) {
     CHECK("hard-linked progress file: the other file is not written", rc == 0 && is(P(L"%ls\\fx\\hl\\sentinel\\hl.txt", T), "sentinel\n")
           && count(P(L"%ls\\textures\\hd-pack", g)) == 6);
 
-    /* no source: nothing to do yet (the download is Task 5) */
+    /* no source and the release unreachable (never the real network): stops quietly */
     wcscpy(g, P(L"%ls\\exe-nosrc\\game", W)); new_game(g);
+    SetEnvironmentVariableW(L"HDPACK_URL", L"http://127.0.0.1:9/");
     rc = run_exe(P(L"%ls\\hd-pack.exe", g), NULL);
+    SetEnvironmentVariableW(L"HDPACK_URL", NULL);
     CHECK("no source: exits 0, no bar", rc == 0 && !exists(P(L"%ls\\hd-pack-progress.txt", g)) && !exists(P(L"%ls\\textures\\hd-pack", g)));
 
     /* a run killed while it unpacked left a stage: set aside, not used, not deleted */
