@@ -162,6 +162,7 @@ check "pack 2 textures zips are byte-identical to pack 1's" '(cd "$T/pack2" && f
 mkdir -p "$T/pack2-movies-only"
 cp "$T/pack2/hd-pack.txt" "$T/pack2/hd-pack-movies.zip" "$T/pack2-movies-only/"   # textures zips missing: fetching one would fail
 tex_before=$(cd "$G/textures/hd-pack" && ls | grep -v '^hd-pack.txt$' | xargs sha256sum)
+mkdir -p "$G/hd-pack-tmp" && printf 'cut' > "$G/hd-pack-tmp/hd-pack-textures-1.zip.part"   # left by a cut run; that zip is kept this time
 rc=0
 HDPACK_SOURCE="$(wine_path "$T/pack2-movies-only")" wine "$G/hd-pack.exe" || rc=$?
 check "pack 2: exit 0" '[ $rc -eq 0 ]'
@@ -195,6 +196,20 @@ check "pack 3: new textures in, all 5" '[ "$(od -An -tx1 -N1 "$G/textures/hd-pac
 check "pack 3: old textures set aside" '[ -f "$G/hd-pack-ancien/hd-pack/000000000000abc4.png" ] && head -1 "$G/hd-pack-ancien/hd-pack/hd-pack.txt" | grep -qx "hd-pack 2"'
 check "pack 3: movies untouched" '[ "$(cat "$G/movies/a.1.mpg")" = "$(cat "$T/src/mov2/a.1.mpg")" ]'
 check "pack 3: marker is version 3, work folder removed" 'head -1 "$G/textures/hd-pack/hd-pack.txt" | grep -qx "hd-pack 3" && [ ! -e "$G/hd-pack-tmp" ]'
+
+echo "== end to end: pack 4 drops two textures (one textures zip left, the same as before): they are all fetched again"
+mkdir -p "$T/src/tex4" && cp "$T/src/tex3/"000000000000abc[0-2].png "$T/src/tex4/"
+python3 "$ROOT/tools/make_hd_pack.py" "$T/src/tex4" "$T/src/mov2" "$T/pack4" --version 4 --max-gb "$(python3 -c 'print(2400/1024**3)')"
+check "pack 4: 1 textures zip, the same as pack 3's first" '[ "$(ls "$T/pack4" | grep -c "^hd-pack-textures-")" = 1 ] && cmp -s "$T/pack4/hd-pack-textures-1.zip" "$T/pack3/hd-pack-textures-1.zip"'
+mkdir -p "$T/pack4-textures-only"
+cp "$T/pack4/hd-pack.txt" "$T/pack4/hd-pack-textures-1.zip" "$T/pack4-textures-only/"
+log_at=$(wc -l < "$G/hd-pack.log")
+rc=0
+HDPACK_SOURCE="$(wine_path "$T/pack4-textures-only")" wine "$G/hd-pack.exe" || rc=$?
+check "pack 4: exit 0" '[ $rc -eq 0 ]'
+check "pack 4: the textures zip is fetched, not kept" '! new_log | grep -q "hd-pack-textures-1.zip: already installed" && new_log | grep -q "hd-pack-movies.zip: already installed"'
+check "pack 4: the dropped textures are gone, the others in" '[ ! -e "$G/textures/hd-pack/000000000000abc3.png" ] && [ ! -e "$G/textures/hd-pack/000000000000abc4.png" ] && [ "$(ls "$G/textures/hd-pack" | grep -c "^000000000000abc[0-2]\.png$")" = 3 ]'
+check "pack 4: marker is version 4" 'head -1 "$G/textures/hd-pack/hd-pack.txt" | grep -qx "hd-pack 4"'
 [ $e2e_ok -eq 1 ] || status=1
 
 echo "== t_download.py: download with resume, local HTTP server"

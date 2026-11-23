@@ -434,10 +434,14 @@ int wmain(void) {
 
     if (hp_realesrgan_packW(G)) set_aside();
 
-    /* tidy up: the verified zips by their names, then the empty folders made */
+    /* tidy up: the zips by their names (and the .part an earlier cut run left
+     * of a zip kept this time), then the empty folders made */
     for (int i = 0; i < nz; i++) {
-        wchar_t zname[128], zpath[HP_WMAX];
-        if (!hp_wide(zips[i].name, zname) && !hp_join(zpath, tmp, zname)) hp_delete_own(G, zpath);
+        wchar_t zname[128], zpath[HP_WMAX], part[HP_WMAX];
+        if (!hp_wide(zips[i].name, zname) && !hp_join(zpath, tmp, zname)) {
+            hp_delete_own(G, zpath);
+            if (wcslen(zpath) + 5 < HP_WMAX) { _snwprintf(part, HP_WMAX, L"%ls.part", zpath); hp_delete_own(G, part); }
+        }
     }
     hp_rmdirs_since(G, 0);
     hp_rmdir_own(G, stage);                                    /* ours from an earlier run, if empty */
