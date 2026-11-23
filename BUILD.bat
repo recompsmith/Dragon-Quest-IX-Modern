@@ -57,7 +57,16 @@ if defined DQIX_PROGRESS echo progress 0.08 Checking the build tools
 echo Checking the build tools (the first time downloads them)...
 rem cc-libs pins gcc's runtime libraries: it has to move with gcc, or a newer gcc (or numpy,
 rem which needs the newer libgcc) cannot be installed and the whole line fails
-"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Sy --noconfirm --needed make mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
+rem a full upgrade first: "pacman -Sy" alone (a partial upgrade) can bring a newer Python whose
+rem libraries stay old, then Python stops with "DLL load failed while importing binascii".
+rem The first pass may only update MSYS2 itself, so it runs twice.
+rem a package manager stopped half way (its window closed, the PC turned off) leaves its lock, and every
+rem install after it fails ("unable to lock database"): Python never comes. None running: the lock is stale.
+tasklist /FI "IMAGENAME eq pacman.exe" 2>nul | find /i "pacman.exe" >nul || if exist "%MSYSROOT%\var\lib\pacman\db.lck" del /f /q "%MSYSROOT%\var\lib\pacman\db.lck"
+rem SDL2 left alone: the upgrade would swap it for sdl2-compat (SDL2 over SDL3), the line after it back again
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm --ignore mingw-w64-ucrt-x86_64-SDL2,mingw-w64-ucrt-x86_64-sdl2-compat"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -Syuu --noconfirm --ignore mingw-w64-ucrt-x86_64-SDL2,mingw-w64-ucrt-x86_64-sdl2-compat"
+"%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed make diffutils mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-SDL2 mingw-w64-ucrt-x86_64-python mingw-w64-ucrt-x86_64-python-yaml"
 if errorlevel 1 echo WARNING: the build tools could not be updated; building with the ones already installed.
 rem optional (townspeople in 3D): on its own, so that without it, or offline, nothing else changes
 "%MSYSROOT%\usr\bin\bash.exe" -lc "pacman -S --noconfirm --needed mingw-w64-ucrt-x86_64-cc-libs mingw-w64-ucrt-x86_64-python-numpy"
@@ -67,6 +76,16 @@ rem ---- build
 set MSYSTEM=UCRT64
 set CHERE_INVOKING=1
 set "DQIX_ROM=%ROM%"
+rem the tools really there (an install that failed above only warned): else say what to do, not a
+rem "python: command not found" or "No module named yaml" further on
+"%MSYSROOT%\usr\bin\bash.exe" -lc "command -v make >/dev/null && command -v gcc >/dev/null && python -c 'import yaml'" >nul 2>&1
+if not errorlevel 1 goto have_tools
+echo The build tools are not all installed (make, gcc, Python and its yaml module).
+echo Open "MSYS2 UCRT64" from the Start menu, type: pacman -Syu   then Enter, answer Y,
+echo again until it says "there is nothing to do", then run this again.
+if defined DQIX_PROGRESS echo BUILD FAILED (build tools): make, gcc or Python with yaml missing; open MSYS2 UCRT64, run pacman -Syu until nothing to do, then try again
+goto failed
+:have_tools
 "%MSYSROOT%\usr\bin\bash.exe" -lc "./tools/build-game.sh \"$(cygpath -u \"$DQIX_ROM\")\""
 if errorlevel 1 goto failed
 echo.
