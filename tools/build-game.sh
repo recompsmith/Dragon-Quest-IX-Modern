@@ -138,7 +138,8 @@ MINGW*|MSYS*)
         # the shortcuts' icon read again from the new program (Windows 10/11; harmless if missing)
         cmd //c "ie4uinit.exe -show" >/dev/null 2>&1 || true
     fi
-    cp /ucrt64/bin/SDL2.dll game/ ;;
+    # only when it changed: the game left open keeps it locked
+    cmp -s /ucrt64/bin/SDL2.dll game/SDL2.dll || cp /ucrt64/bin/SDL2.dll game/ ;;
 *)
     EXE=game/dqix
     # no make (SteamOS on the Steam Deck): tools/build_nomake.py does build.mk's work
