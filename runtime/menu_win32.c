@@ -250,6 +250,11 @@ static void build(int all, const char* const* shell_names, int n_shells) {
     item(st, MI_SKIP0 + 1, L"Skip the &logos");
     item(st, MI_SKIP0 + 2, L"Skip the logos and the opening &movie");
     sep(modern);
+    Menu gsp = sub(modern, L"Game s&peed (the music keeps its pitch)");
+    item(gsp, MI_GSPEED0, L"&Normal");
+    item(gsp, MI_GSPEED0 + 1, L"1.&25x");
+    item(gsp, MI_GSPEED0 + 2, L"1.&5x");
+    item(gsp, MI_GSPEED0 + 3, L"&2x");
     Menu bsp = sub(modern, L"&Battle speed");
     item(bsp, MI_BSPEED1, L"&Normal");
     item(bsp, MI_BSPEED1 + 1, L"&2x");

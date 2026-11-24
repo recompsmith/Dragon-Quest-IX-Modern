@@ -232,6 +232,8 @@ static int g_paused, g_turbo;   /* Game > Pause, Game > Fast forward (latched) *
 static int g_gpu_cap = GL_MAX_SCALE;                          /* 3D resolution Auto: the most this graphics card draws fast enough (gpu_budget) */
 static float g_gpu_load = -1;                                     /* ...the share of the time its GPU was busy, the last second (-1: not measured) */
 static int g_battle_speed = 1;  /* Modern > Battle speed: 1 to 4 times as fast (not in a session) */
+static int g_game_speed = 4;    /* Modern > Game speed, in quarters: 4 normal, 5 6 8 = 1.25x 1.5x 2x (not in battle, not in a session) */
+static int g_pace_q = 4;        /* the speed now, in quarters (Game speed or Battle speed) */
 static int g_battle_turn_only;  /* ...only while the turn plays out: choosing the commands at the usual pace */
 static int g_skip_intro = BOOTSKIP_LOGOS;   /* Modern > Start: skip the logos (1), and the opening movie (2) */
 static int g_all_options;       /* every option in the menus and on the keys (settings.ini all_options), else only the project's own setup */
@@ -3428,6 +3430,7 @@ static void settings_load(void) {
         else if (!strcmp(key, "skip_intro")) { int v = atoi(val); if (v >= 0 && v <= 2) g_skip_intro = v; }
         else if (!strcmp(key, "trophies")) trophies_enable(atoi(val) != 0);
         else if (!strcmp(key, "trophy_sound")) trophies_sound_enable(atoi(val) != 0);
+        else if (!strcmp(key, "game_speed")) { int v = atoi(val); if (v == 100 || v == 125 || v == 150 || v == 200) g_game_speed = v / 25; }
         else if (!strcmp(key, "battle_speed")) { int v = atoi(val); if (v >= 1 && v <= 4) g_battle_speed = v; }
         else if (!strcmp(key, "battle_speed_turn_only")) g_battle_turn_only = atoi(val) != 0;
         else if (!strcmp(key, "battle_victory_auto")) g_battle_auto_victory = atoi(val) != 0;
@@ -3545,6 +3548,9 @@ static void settings_save(void) {
     fprintf(f, "skip_intro = %d\n", g_skip_intro);
     fprintf(f, "trophies = %d\n", trophies_enabled());
     fprintf(f, "trophy_sound = %d\n", trophies_sound_enabled());
+    fprintf(f, "# Modern > Game speed: the game (walking, menus, dialogues, cut scenes) at 100, 125, 150 or 200%%\n");
+    fprintf(f, "# of its speed, the music at its pitch; battles go at their own speed below (not while playing with friends)\n");
+    fprintf(f, "game_speed = %d\n", g_game_speed * 25);
     fprintf(f, "# Modern > Battle speed: battles go 1, 2, 3 or 4 times as fast (not while playing with friends);\n");
     fprintf(f, "# turn_only 1: only while the turn plays out (the commands are chosen at the usual pace);\n");
     fprintf(f, "# victory_auto 1: after a win, the messages turn their page by themselves (not after a level up): 0 or 1\n");
@@ -4419,7 +4425,7 @@ static void gpu_budget(void) {
     uint64_t now = SDL_GetPerformanceCounter(); double ms = gl_gpu_ms();
     int s = gl_render_scale();
     if (ms < 0) return;                                           /* no timer queries */
-    if (!t0 || s != scale0 || g_fast || g_paused || g_battle_pace > 1) { t0 = now; ms0 = ms; scale0 = s; return; }   /* (a new resolution, fast forward, faster battles: start over) */
+    if (!t0 || s != scale0 || g_fast || g_paused || g_pace_q > 4) { t0 = now; ms0 = ms; scale0 = s; return; }   /* (a new resolution, fast forward, a faster game: start over) */
     double el = (double)(now - t0) * 1000.0 / (double)g_perf_freq;
     if (el < 1000) return;
     float load = (float)((ms - ms0) / el);
@@ -5881,6 +5887,7 @@ static void menu_sync(void) {
     menu_check(MI_HINTS, g_hints); menu_enable(MI_HINTS, g_gl);
     menu_check(MI_CONFIRM_BOTTOM, g_ctl_pad[CA_A] == SDL_CONTROLLER_BUTTON_A);
     for (int i = 0; i < 3; i++) menu_check(MI_SKIP0 + i, g_skip_intro == i);
+    for (int i = 0; i < 4; i++) { static const int q[4] = { 4, 5, 6, 8 }; menu_check(MI_GSPEED0 + i, g_game_speed == q[i]); menu_enable(MI_GSPEED0 + i, !session_requested()); }
     for (int i = 0; i < 4; i++) { int id = i < 3 ? MI_BSPEED1 + i : MI_BSPEED4; menu_check(id, g_battle_speed == i + 1); menu_enable(id, !session_requested()); }
     menu_check(MI_BSPEED_TURN, g_battle_turn_only); menu_enable(MI_BSPEED_TURN, !session_requested() && g_battle_speed > 1);
     menu_check(MI_BVICTORY, g_battle_auto_victory); menu_enable(MI_BVICTORY, !session_requested());
@@ -6564,6 +6571,10 @@ static void do_action(int id) {
     case MI_SKIP0: case MI_SKIP0 + 1: case MI_SKIP0 + 2: g_skip_intro = id - MI_SKIP0; break;
     case MI_BSPEED1: case MI_BSPEED1 + 1: case MI_BSPEED1 + 2: g_battle_speed = id - MI_BSPEED1 + 1; break;
     case MI_BSPEED4: g_battle_speed = 4; break;
+    case MI_GSPEED0: g_game_speed = 4; break;
+    case MI_GSPEED0 + 1: g_game_speed = 5; break;
+    case MI_GSPEED0 + 2: g_game_speed = 6; break;
+    case MI_GSPEED0 + 3: g_game_speed = 8; break;
     case MI_BSPEED_TURN: g_battle_turn_only = !g_battle_turn_only; break;
     case MI_BVICTORY: g_battle_auto_victory = !g_battle_auto_victory; break;
     case MI_SAVEBAK: g_save_backups = !g_save_backups; break;
@@ -6694,6 +6705,8 @@ static void do_action(int id) {
             "Top screen in the corner: the field as on the DS (4:3), the top screen beside it.\n\n"
             "Two windows: one screen in each, to put them on two monitors (each can be fullscreen).\n\n"
             "Single screen (U or the left trigger): only one screen, as big as it gets; F9 or the right trigger shows the other one.\n\n"
+            "Game speed: the whole game (walking, menus, dialogues, cut scenes) goes 1.25, 1.5 or 2 times as fast; the music and sounds "
+            "keep their pitch and skip ahead a little. Battles go at their own speed (Battle speed). Off while playing with friends far away.\n\n"
             "Battle speed: battles (and their victory messages) go 2, 3 or 4 times as fast; the music keeps its pitch and skips ahead. "
             "The rest of the game stays at its own speed. Off while playing with friends far away. Only while the turn plays out: "
             "the attacks, spells and messages go faster, the commands are chosen at the usual pace. Victory messages go by themselves: "
@@ -7281,7 +7294,7 @@ void frontend_frame(void) {
     /* pacing */
     uint64_t now = SDL_GetPerformanceCounter();
     uint64_t period = (uint64_t)(g_perf_freq / DS_FPS);
-    int battle = party_in_battle();
+    int battle = party_in_battle(), in_battle = battle;
     { static int was; if (battle != was) { LOG_INFO("battle %s\n", battle ? "begins" : "over"); was = battle; } }
     {   /* ...only while the turn plays out: the usual pace from the moment someone's
          * commands show, faster again once they have been gone a few frames */
@@ -7291,9 +7304,11 @@ void frontend_frame(void) {
         gone = shown ? 0 : gone + (gone < 1000);
         if (g_battle_turn_only && gone < 8) battle = 0;
     }
-    int speed = battle && g_battle_speed > 1 && !g_fast && !session_requested() ? g_battle_speed : 1;   /* Modern > Battle speed */
-    sound_set_speed(speed);
-    g_battle_pace = speed;
+    /* Modern > Battle speed in battle (alone: Game speed doesn't add to it), Game speed elsewhere */
+    int q = g_fast || session_requested() ? 4 : in_battle ? (battle && g_battle_speed > 1 ? g_battle_speed * 4 : 4) : g_game_speed;
+    sound_set_speed(q);
+    g_pace_q = q;
+    g_battle_pace = in_battle ? q / 4 : 1;
     if (g_fast) {
         sound_discard();
         g_next_frame = now;
@@ -7311,7 +7326,7 @@ void frontend_frame(void) {
             double err = (avg - (double)AUDIO_TARGET) / (double)AUDIO_TARGET;
             adjust = 1.0 + fmax(-0.005, fmin(0.005, err * 0.02));
         }
-        g_next_frame += (uint64_t)((double)period * adjust / speed);
+        g_next_frame += (uint64_t)((double)period * adjust * 4 / q);
         if (now > g_next_frame + period * 6) g_next_frame = now;          /* fell far behind: don't try to catch up */
         else {
             while ((now = SDL_GetPerformanceCounter()) < g_next_frame) {
