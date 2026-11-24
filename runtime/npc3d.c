@@ -166,7 +166,7 @@ static void sprite_type(uint32_t spr, char* out, int n) {
 typedef struct {
     const Npc3dModel* model;
     uint32_t spr;
-    float angle;                         /* radians: the way it faces in the world */
+    float angle;                         /* radians: the way it faces in the world, about y from +z */
     float cam[9];                        /* the camera's turn: world -> camera (column-major) */
     int anim, frame;
     /* where its picture is, in the camera's space (npc3d_vertex) */
@@ -218,11 +218,23 @@ void hook_DrawSprite(Cpu* c, void (*orig)(Cpu*)) {
     memset(s, 0, sizeof *s);
     s->model = m; s->spr = spr;
     s->x0 = s->y0 = 1e9f; s->x1 = s->y1 = -1e9f;
-    int32_t face = (int32_t)rd32(spr + 0x60);                     /* the way it faces now (+0x64: where it is turning to) */
-    static float sign = 0, off = 0;
-    if (sign == 0) { const char* e = getenv("DQIX_NPC3D_ROT"); sign = -1; if (e) sscanf(e, "%f,%f", &sign, &off); }   /* tests: "sign,offset degrees" */
-    s->angle = sign * (float)face * 6.2831853f / (float)ANGLE_FULL + off * 0.017453293f;
     camera(s->cam);
+    /* The game picks its picture from the way it faces as seen from the camera
+     * (func_0203cbe8): +0x60 minus the camera's angle (+0x70 of the second
+     * argument, in DTCM), plus +0x90 with +0x50 & 8; 0: towards the camera,
+     * a quarter turn: to the right of the screen. The model is turned the same
+     * way, measured on the ground from the camera's right and back axes, so it
+     * matches the picture whatever the camera and its angle. */
+    int32_t rel = (int32_t)rd32(spr + 0x60) - (int32_t)mem_read32(c->r[1] + 0x70) + (rd32(spr + 0x50) & 8 ? (int32_t)rd32(spr + 0x90) : 0);
+    static float sign = 0, off = 0;
+    if (sign == 0) { const char* e = getenv("DQIX_NPC3D_ROT"); sign = 1; if (e) sscanf(e, "%f,%f", &sign, &off); }   /* tests: "sign,offset degrees" */
+    {   float r = sign * (float)rel * 6.2831853f / (float)ANGLE_FULL;
+        float rx = s->cam[0], rz = s->cam[6], bx = s->cam[2], bz = s->cam[8];   /* the camera's x and z axes in the world, on the ground */
+        float nr = sqrtf(rx * rx + rz * rz), nb = sqrtf(bx * bx + bz * bz);
+        if (nr < 1e-3f || nb < 1e-3f) { rx = 1; rz = 0; bx = 0; bz = 1; nr = nb = 1; }
+        float fx = sinf(r) * rx / nr + cosf(r) * bx / nb, fz = sinf(r) * rz / nr + cosf(r) * bz / nb;
+        s->angle = atan2f(fx, fz) + off * 0.017453293f;        /* the model's +z (its front) turned to (fx, fz) */
+    }
     {   float w[3] = { (int32_t)rd32(spr + 4) / 4096.0f, (int32_t)rd32(spr + 8) / 4096.0f, (int32_t)rd32(spr + 12) / 4096.0f };
         for (int c2 = 0; c2 < 3; c2++) s->expect[c2] = w[0] * s->cam[c2] + w[1] * s->cam[3 + c2] + w[2] * s->cam[6 + c2] + (int32_t)rd32(CAMERA_MTX + 36 + 4 * c2) / 4096.0f; }
     /* walking or standing: has it moved in the last few frames? */

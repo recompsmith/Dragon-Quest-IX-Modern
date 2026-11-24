@@ -112,4 +112,24 @@ with tempfile.TemporaryDirectory() as tmp:
     for i in (1, 2, 3):
         with zipfile.ZipFile(os.path.join(out4, "hd-pack-textures-%d.zip" % i)) as z:
             assert len(z.infolist()) <= 2
+    make_hd_pack.MAX_ENTRIES = 65535
+
+    # --extra: the launcher's background goes in the movies zip as movies/launcher-back.jpg
+    # (installed as movies/launcher-back.jpg; a textures zip would make everyone fetch the
+    # textures again for one picture, PR 167); a name that isn't the one expected is refused
+    back = os.path.join(tmp, "launcher-back.jpg")
+    with open(back, "wb") as f:
+        f.write(bytes([0xFF, 0xD8]) + b" picture")
+    out5 = os.path.join(tmp, "out5")
+    assert make_hd_pack.main([tex, mov, out5, "--extra", back]) == 0
+    with zipfile.ZipFile(os.path.join(out5, "hd-pack-movies.zip")) as z:
+        assert z.read("movies/launcher-back.jpg") == bytes([0xFF, 0xD8]) + b" picture", z.namelist()
+    with zipfile.ZipFile(os.path.join(out5, "hd-pack-textures-1.zip")) as z:
+        assert "textures/launcher-back.jpg" not in z.namelist()
+    other = os.path.join(tmp, "other.jpg")
+    with open(other, "wb") as f:
+        f.write(b"x")
+    r = subprocess.run([sys.executable, TOOL, tex, mov, os.path.join(tmp, "out6"), "--extra", other],
+                       capture_output=True, text=True)
+    assert r.returncode != 0 and "launcher-back.jpg" in r.stderr, (r.returncode, r.stderr)
 print("OK")

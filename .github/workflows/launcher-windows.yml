@@ -1,0 +1,39 @@
+# The launcher's work on a real Windows (tests/launcher/t_work_wine.sh with
+# DQIX_CI_WINDOWS=1): the update path uses Windows' own tar and robocopy, which
+# Wine doesn't have. No game, no ROM: a fake BUILD.bat stands for the build.
+name: Launcher on Windows
+on:
+  push:
+    paths:
+      - 'launcher/**'
+      - 'tests/launcher/**'
+      - 'runtime/update.c'
+      - 'runtime/update.h'
+      - '.github/workflows/launcher-windows.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          install: mingw-w64-ucrt-x86_64-gcc zip
+      - name: "SDL2 from libsdl-org's release (the real SDL2, not MSYS2's compatibility one)"
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download release-2.30.9 --repo libsdl-org/SDL --pattern 'SDL2-devel-2.30.9-mingw.tar.gz' --dir sdl
+          echo "b188d165dc4a0372042bff3d0c18e9bb90772581e92a7b8b47b521b47714f75c *sdl/SDL2-devel-2.30.9-mingw.tar.gz" | sha256sum -c   # pinned: the file the release zips also ship
+          tar -xzf sdl/SDL2-devel-2.30.9-mingw.tar.gz -C sdl
+      - name: Logic tests
+        run: sh tests/launcher/run.sh
+      - name: The work (update, build, first launch)
+        run: DQIX_CI_WINDOWS=1 sh tests/launcher/t_work_wine.sh "$PWD/sdl/SDL2-2.30.9/x86_64-w64-mingw32"

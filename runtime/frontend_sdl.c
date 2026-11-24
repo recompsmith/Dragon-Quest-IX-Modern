@@ -3731,7 +3731,7 @@ static int try_gl(void) {
     gl_textures_hd_start();                                       /* HD textures still to make (a PC turned off before the end): on with them */
     if (getenv("DQIX_INPUT_FILE")) g_hdpack = 0;                  /* a scripted run (tests) never downloads it */
     if (getenv("DQIX_HD_PACK")) g_hdpack = atoi(getenv("DQIX_HD_PACK")) != 0;   /* tests */
-    hdpack_start(g_hdpack);                                       /* the HD pack: hd-pack.exe in the background, it does nothing once it is there */
+    hdpack_start(g_hdpack && !getenv("DQIX_LAUNCHER"));          /* the HD pack: hd-pack.exe in the background (the launcher's job when it started us), it does nothing once it is there */
     if (getenv("DQIX_HD_TEXT")) g_hdtext = atoi(getenv("DQIX_HD_TEXT")) != 0;
     if (getenv("DQIX_HD_MOVIES")) g_hdmovie = atoi(getenv("DQIX_HD_MOVIES")) != 0;   /* tests */
     if (getenv("DQIX_HD_FONT")) snprintf(g_hdfont, sizeof g_hdfont, "%s", getenv("DQIX_HD_FONT"));
@@ -3942,7 +3942,7 @@ void frontend_init(int argc, char** argv) {
         apply_mode();
         ui_lang_load(ui_language_wanted());
         menu_build();
-        if (g_update_auto && !session_requested() && update_project_dir()) update_check_async();
+        if (g_update_auto && !session_requested() && update_project_dir() && !getenv("DQIX_LAUNCHER")) update_check_async();   /* the launcher did it */
         update_actual();
         menu_sync();
         layout_window();

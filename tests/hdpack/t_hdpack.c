@@ -399,6 +399,7 @@ static void t_exe(void) {
     CHECK("exe: progress 'done 0 100', work folder gone, lock let go", is(P(L"%ls\\hd-pack-progress.txt", g), "done 0 100")
           && !exists(P(L"%ls\\hd-pack-tmp", g)) && l2 != INVALID_HANDLE_VALUE);
     if (l2 != INVALID_HANDLE_VALUE) CloseHandle(l2); }
+    CHECK("exe: hd-pack-status.txt says done (for the launcher)", is(P(L"%ls\\hd-pack-status.txt", g), "done"));
 
     DeleteFileW(P(L"%ls\\hd-pack-progress.txt", g));
     char log1[65536]; int l1 = get(P(L"%ls\\hd-pack.log", g), log1, sizeof log1);
@@ -410,6 +411,12 @@ static void t_exe(void) {
     CHECK("installed_is_noop: exit 0, no progress file, nothing touched", rc == 0 && !exists(P(L"%ls\\hd-pack-progress.txt", g))
           && !exists(P(L"%ls\\hd-pack-tmp", g)) && CompareFileTime(&m1.ftLastWriteTime, &m2.ftLastWriteTime) == 0
           && l1 == l2 && count(P(L"%ls\\textures\\hd-pack", g)) == 6 && count(P(L"%ls\\hd-pack-ancien", g)) == 1);
+    CHECK("installed_is_noop: status uptodate, exit 0", is(P(L"%ls\\hd-pack-status.txt", g), "uptodate"));
+    /* installed, and the pack's server can't be reached: up to date all the same */
+    SetEnvironmentVariableW(L"HDPACK_URL", L"http://127.0.0.1:9/");
+    rc = run_exe(P(L"%ls\\hd-pack.exe", g), NULL);
+    SetEnvironmentVariableW(L"HDPACK_URL", NULL);
+    CHECK("offline, installed: exit 0, status uptodate", rc == 0 && is(P(L"%ls\\hd-pack-status.txt", g), "uptodate"));
 
     /* second_instance_exits: the lock is held */
     wcscpy(g, P(L"%ls\\exe-locked\\game", W)); new_game(g);
@@ -419,7 +426,7 @@ static void t_exe(void) {
     DWORD dt = GetTickCount() - t0;
     CloseHandle(lk);
     { char lg[4096];
-    CHECK("second_instance_exits: exits 0 at once, does nothing", lk != INVALID_HANDLE_VALUE && rc == 0 && dt < 20000
+    CHECK("second_instance_exits: exits 2 at once (for the launcher), does nothing", lk != INVALID_HANDLE_VALUE && rc == 2 && dt < 20000
           && !exists(P(L"%ls\\textures\\hd-pack", g)) && !exists(P(L"%ls\\hd-pack-progress.txt", g)) && !exists(P(L"%ls\\hd-pack-tmp", g))
           && get(P(L"%ls\\hd-pack.log", g), lg, sizeof lg) > 0 && strstr(lg, "another hd-pack.exe is at work")); }
 
@@ -432,6 +439,8 @@ static void t_exe(void) {
     CHECK("bad zip: fails, nothing installed, nothing set aside, no bar", rc != 0 && !exists(P(L"%ls\\textures\\hd-pack", g))
           && is(P(L"%ls\\textures\\hd\\0000000000000009.png", g), "real-esrgan") && is(P(L"%ls\\movies\\a.mpg", g), "old a")
           && !exists(P(L"%ls\\hd-pack-ancien", g)) && !exists(P(L"%ls\\hd-pack-progress.txt", g)));
+    { char st[256]; CHECK("bad zip: exit 1, status 'failed <reason>'", rc == 1 && get(P(L"%ls\\hd-pack-status.txt", g), st, sizeof st) > 7
+          && !strncmp(st, "failed ", 7) && strlen(st) > 8); }
     CHECK("bad zip: the bad zip is not kept, the stage is cleaned", !exists(P(L"%ls\\hd-pack-tmp\\hd-pack-movies.zip", g))
           && !exists(P(L"%ls\\hd-pack-tmp\\stage", g)));
     CHECK("bad zip: then the good pack installs (verified zips reused)", run_exe(P(L"%ls\\hd-pack.exe", g), pack) == 0
@@ -473,12 +482,13 @@ static void t_exe(void) {
     CHECK("hard-linked progress file: the other file is not written", rc == 0 && is(P(L"%ls\\fx\\hl\\sentinel\\hl.txt", T), "sentinel\n")
           && count(P(L"%ls\\textures\\hd-pack", g)) == 6);
 
-    /* no source and the release unreachable (never the real network): stops quietly */
+    /* no source and the server can't be reached (offline): no bar, nothing installed; exit 1, status failed (the launcher says so) */
     wcscpy(g, P(L"%ls\\exe-nosrc\\game", W)); new_game(g);
     SetEnvironmentVariableW(L"HDPACK_URL", L"http://127.0.0.1:9/");
     rc = run_exe(P(L"%ls\\hd-pack.exe", g), NULL);
     SetEnvironmentVariableW(L"HDPACK_URL", NULL);
-    CHECK("no source: exits 0, no bar", rc == 0 && !exists(P(L"%ls\\hd-pack-progress.txt", g)) && !exists(P(L"%ls\\textures\\hd-pack", g)));
+    { char st[256]; CHECK("offline, no pack: exit 1, status failed offline, no bar", rc == 1 && !exists(P(L"%ls\\hd-pack-progress.txt", g))
+          && !exists(P(L"%ls\\textures\\hd-pack", g)) && get(P(L"%ls\\hd-pack-status.txt", g), st, sizeof st) > 0 && !strncmp(st, "failed offline", 14)); }
 
     /* a run killed while it unpacked left a stage: set aside, not used, not deleted */
     wcscpy(g, P(L"%ls\\exe-stale\\game", W)); new_game(g);

@@ -2,11 +2,12 @@
  *
  * Started by the game in the background (like textures-hd.exe). Works on the
  * folder it sits in (the game folder):
- *   - one at a time (hd-pack.lock held open), IDLE priority;
+ *   - one at a time (hd-pack.lock held open), IDLE priority (normal with --foreground);
  *   - reads the manifest hd-pack.txt from the release (HD_PACK_URL below;
  *     HDPACK_URL=<base URL> overrides it, HDPACK_SOURCE=<folder> takes the
- *     manifest and zips from a local folder, for tests); offline: stops
- *     quietly, no bar;
+ *     manifest and zips from a local folder, for tests); offline: no bar,
+ *     nothing logged, exit 0 "uptodate" if a pack is installed, else exit 1
+ *     "failed offline ...";
  *   - nothing to do if textures/hd-pack/hd-pack.txt has the same version;
  *     else the zips installed as they are (same name, size, SHA-256) are
  *     skipped: a pack that only changes the movies downloads only them;
@@ -20,7 +21,15 @@
  *   - then the verified zips are deleted by their manifest names and the
  *     empty work folders it made are removed, deepest first;
  *   - hd-pack-progress.txt says "working <percent> 100" then "done 0 100"
- *     (removed again if it fails, so the game shows no bar); log hd-pack.log.
+ *     (removed again if it fails, so the game shows no bar); log hd-pack.log;
+ *   - for the launcher (launcher/lnch_work.c), which runs it with --foreground
+ *     (normal priority) and waits: hd-pack-status.txt, one line,
+ *     "download <bytes> <of bytes> <zip i> <of n>", "install <i> <of n>" (n =
+ *     zips fetched + 1, the last step the install; zips already installed are not counted), "uptodate", "done" or "failed
+ *     <reason>" ("failed download: ..." when the network broke a download);
+ *     exit code 0 installed or up to date, 1 failed (offline without a pack:
+ *     "failed offline ..."; the early failures, folder refused, lock, local
+ *     manifest, bad address, write no status line), 2 another hd-pack.exe is at work.
  * Deletion safety: see hdpack_core.h. Build (MSYS2 or the cloud's mingw):
  *   x86_64-w64-mingw32-gcc -O2 -municode -I tools -o hd-pack.exe tools/hd-pack.c -lbcrypt -lwinhttp
  * Tests: tests/hdpack/run.sh (and t_download.py), in a Linux cloud session
@@ -39,12 +48,25 @@
 #define MANIFEST_MAX (64 * 1024)
 
 static wchar_t G[HP_WMAX];          /* the game folder */
-static wchar_t PROGRESS[HP_WMAX];
+static wchar_t PROGRESS[HP_WMAX], STATUS[HP_WMAX];
+static int g_zip, g_nzip;           /* the zip being downloaded (1-based), how many */
+static int g_downloading;           /* a failure now is the network's (the launcher retries it) */
 
 static int progress(const char* state, int pct) {
     char b[64];
     int n = snprintf(b, sizeof b, "%s %d 100", state, pct);
     return hp_write_own(G, PROGRESS, b, (size_t)n, 0);
+}
+/* hd-pack-status.txt, for the launcher (see the top) */
+static int status(const char* fmt, ...) {
+    char b[256];
+    va_list a; va_start(a, fmt);
+    int n = vsnprintf(b, sizeof b, fmt, a);
+    va_end(a);
+    if (n < 0) return -1;
+    if (n >= (int)sizeof b) n = sizeof b - 1;
+    for (int i = 0; i < n; i++) if (b[i] == '\n' || b[i] == '\r') b[i] = ' ';
+    return hp_write_own(G, STATUS, b, (size_t)n, 0);
 }
 /* a small text file, at most max-1 bytes; -1 if missing or bigger */
 static int read_small(const wchar_t* path, char* out, DWORD max) {
@@ -77,7 +99,9 @@ static int g_last_pct = -1;
 static void bar(long long have) {                /* at most twice a second */
     ULONGLONG now = GetTickCount64();
     int pct = g_total > 0 ? (int)((g_before + have) * 85 / g_total) : 0;
-    if (pct == g_last_pct || now - g_last_bar < 500) return;
+    if (now - g_last_bar < 500) return;
+    status("download %lld %lld %d %d", g_before + have, g_total, g_zip, g_nzip);
+    if (pct == g_last_pct) { g_last_bar = now; return; }
     g_last_bar = now; g_last_pct = pct;
     progress("working", pct);
 }
@@ -266,7 +290,8 @@ static void set_aside(void) {
     if (left) hp_log("  %d folder(s) could not be set aside (see above), tried again next time\n", left);
 }
 
-int wmain(void) {
+int wmain(int argc, wchar_t** argv) {
+    int foreground = argc > 1 && !wcscmp(argv[1], L"--foreground");   /* the launcher waits for it: normal priority */
     /* the game folder: where this exe is */
     DWORD n = GetModuleFileNameW(NULL, G, HP_WMAX);
     if (!n || n >= HP_WMAX) return 1;
@@ -274,7 +299,7 @@ int wmain(void) {
     if (!s) return 1;
     *s = 0;
     if (!SetCurrentDirectoryW(G)) return 1;
-    if (hp_join(PROGRESS, G, L"hd-pack-progress.txt")) return 1;
+    if (hp_join(PROGRESS, G, L"hd-pack-progress.txt") || hp_join(STATUS, G, L"hd-pack-status.txt")) return 1;
 
     /* one at a time: a file held open (no sharing), let go when this ends even if killed */
     wchar_t lock[HP_WMAX];
@@ -285,12 +310,15 @@ int wmain(void) {
      * deleted, even on close: an empty hd-pack.lock stays, held only while open) */
     HANDLE lh = hp_open_own(G, lock, 0);
     if (lh == INVALID_HANDLE_VALUE) {
-        if (GetLastError() == ERROR_SHARING_VIOLATION) { open_log(); hp_log("  another hd-pack.exe is at work: this one stops\n"); return 0; }
+        if (GetLastError() == ERROR_SHARING_VIOLATION) { open_log(); hp_log("  another hd-pack.exe is at work: this one stops\n"); return 2; }
         open_log(); hp_log("  can't make the lock %s (error %lu); nothing done\n", hp_u8(lock), GetLastError()); return 1;
     }
-    /* the game comes first: idle CPU, and low disk and memory priority too */
-    SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
-    SetPriorityClass(GetCurrentProcess(), PROCESS_MODE_BACKGROUND_BEGIN);
+    /* the game comes first: idle CPU, and low disk and memory priority too
+     * (not for the launcher, which waits for this before letting anyone play) */
+    if (!foreground) {
+        SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+        SetPriorityClass(GetCurrentProcess(), PROCESS_MODE_BACKGROUND_BEGIN);
+    }
     {   /* the game shows the bar only while this mutex is there (gone when this ends, even killed) */
         wchar_t mname[128];
         hdpack_mutex_name(G, mname, 128);
@@ -325,7 +353,11 @@ int wmain(void) {
         /* offline, or no release yet: quietly, next time (said on stderr only,
          * so the log doesn't grow by a line at every launch without Internet) */
         if (fetch_small(path, manifest, sizeof manifest)) {
-            CloseHandle(lh); return 0;
+            CloseHandle(lh);
+            wchar_t mark[HP_WMAX];                            /* a pack here already: up to date as far as we can tell */
+            if (!hp_join(mark, G, L"textures\\hd-pack\\hd-pack.txt") && hp_isfile(mark)) { status("uptodate"); return 0; }
+            status("failed offline: the HD pack can't be downloaded now (no Internet, or GitHub doesn't answer)");
+            return 1;
         }
     }
     if ((nz = hp_parse_manifest(manifest, &version, zips, MAX_ZIPS)) <= 0) {
@@ -346,6 +378,7 @@ int wmain(void) {
             nh = hp_parse_manifest(have, &hv, hz, MAX_ZIPS);
         if (nh >= 0 && hv == version) {
             if (hp_realesrgan_packW(G) && aside_pending()) { open_log(); set_aside(); }
+            status("uptodate");
             CloseHandle(lh); return 0;
         }
         int tex_new = 0, tex_had = 0, tex_same = 0;
@@ -373,10 +406,13 @@ int wmain(void) {
      *    before all of them are whole) */
     g_total = 0;
     for (int i = 0; i < nz; i++) if (!kept[i]) g_total += zips[i].size;
-    g_before = 0;
-    for (int i = 0; i < nz; i++) {
+    g_before = 0; g_nzip = 0;
+    for (int i = 0; i < nz; i++) g_nzip += !kept[i];
+    for (int i = 0, fetched = 0; i < nz; i++) {
         wchar_t zname[128], from[HP_WMAX], zpath[HP_WMAX];
         if (kept[i]) { hp_log("  %s: already installed\n", zips[i].name); continue; }
+        g_zip = ++fetched; g_last_bar = 0; bar(0);
+        g_downloading = !local;
         if (hp_wide(zips[i].name, zname) || hp_join(zpath, tmp, zname)) { hp_log("  path too long\n"); goto fail; }
         if (!hp_safe_path(G, zpath)) { hp_log("  refused (unsafe path): %s\n", hp_u8(zpath)); goto fail; }
         if (hp_exists(zpath) && !zip_ok(zpath, &zips[i])) {   /* ours from an earlier run, not the right one */
@@ -394,6 +430,7 @@ int wmain(void) {
                 if (have) hp_log("  %s: going on from %lld of %lld bytes\n", zips[i].name, have, zips[i].size);
                 _snwprintf(from, HP_WMAX, L"%ls%ls", g_base, zname);
                 if (hp_fetchW(g_host, g_port, g_secure, from, zpath, have, zips[i].size)) goto fail;
+                g_downloading = 0;                          /* fetched: a bad SHA-256 below is not the network's */
             }
             if (!zip_ok(zpath, &zips[i])) {
                 hp_log("  %s: size or SHA-256 differs from the manifest, deleted\n", zips[i].name);
@@ -402,6 +439,7 @@ int wmain(void) {
             }
             hp_log("  %s: here and checked\n", zips[i].name);
         } else hp_log("  %s: already here and checked\n", zips[i].name);
+        g_downloading = 0;
         g_before += zips[i].size;
         bar(0);
     }
@@ -415,12 +453,13 @@ int wmain(void) {
         }
     }
     if (hp_mkdir(G, stage)) { hp_log("  can't make %s\n", hp_u8(stage)); goto fail; }
-    for (int i = 0; i < nz; i++) {
+    for (int i = 0, unpacked = 0; i < nz; i++) {
         wchar_t zname[128], zpath[HP_WMAX];
         if (kept[i]) continue;
         if (hp_wide(zips[i].name, zname) || hp_join(zpath, tmp, zname)) goto fail;
         if (hp_unzip_storedW(zpath, stage)) { hp_log("  %s: can't unpack\n", zips[i].name); goto fail; }
         progress("working", 85 + (i + 1) * 10 / nz);
+        status("install %d %d", ++unpacked, g_nzip + 1);
     }
 
     wchar_t smark[HP_WMAX];
@@ -448,11 +487,14 @@ int wmain(void) {
     hp_rmdir_own(G, tmp);
     if (hp_exists(tmp)) hp_log("  %s is not empty: left in place\n", hp_u8(tmp));
     if (progress("done", 0)) hp_log("  the progress file could not say done\n");
+    status("done");
     hp_log("  done\n");
     CloseHandle(lh);
     return 0;
 
-fail:
+fail:;
+    char reason[200];                                          /* the log's last line now: what went wrong */
+    snprintf(reason, sizeof reason, "%s", hp_last_log);
     /* the files this run unpacked, by exact name; verified zips stay for next time */
     /* (after a failed undo, only the files still in the stage are deleted:
      * the ones left in place are where the log says) */
@@ -461,6 +503,10 @@ fail:
     if (!ok) hp_log("  failed: nothing installed, nothing set aside\n");
     if (hp_delete_own(G, PROGRESS) && progress("failed", 0) == 0)   /* no bar left saying "working" */
         hp_log("  the progress file could not be removed: it says failed\n");
+    {   /* the reason, for the launcher */
+        char* q = reason; while (*q == ' ') q++;
+        status("failed %s%s", g_downloading ? "download: " : "", *q ? q : "see hd-pack.log");
+    }
     CloseHandle(lh);
     return 1;
 }

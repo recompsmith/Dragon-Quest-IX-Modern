@@ -197,7 +197,8 @@ def main():
         # offline_leaves_no_bar
         g = new_game(tmp, "g-offline", exe)
         rc = run(g, "http://127.0.0.1:9/")
-        check("offline_leaves_no_bar: exit 0, no bar, nothing changed", rc == 0 and no_bar(g)
+        # (exit 1 with no pack installed: the launcher shows it; the game ignores the code)
+        check("offline_leaves_no_bar: exit 1, no bar, nothing changed", rc == 1 and no_bar(g)
               and not os.path.exists(os.path.join(g, "textures", "hd-pack"))
               and not os.path.exists(os.path.join(g, "hd-pack-tmp"))
               and read(os.path.join(g, "textures", "hd", "0000000000000009.png")) == b"real-esrgan")
@@ -301,7 +302,7 @@ def main():
         with open(os.path.join(g, "hd-pack-progress.txt"), "wb") as f:
             f.write(b"working 37 100")
         rc = run(g, "http://127.0.0.1:9/")
-        check("stale 'working' bar + offline: the bar is gone", rc == 0 and no_bar(g))
+        check("stale 'working' bar + offline: the bar is gone", rc == 1 and no_bar(g))
 
         # GitHub sends release files from another host (302): Range must follow
         srv7, srv8 = Server(), Server()

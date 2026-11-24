@@ -6,6 +6,12 @@
 # or BUILD.sh --prepare on Linux and the Steam Deck: the Linux zip leaves out
 # the .bat files, so the launcher, trying recomplauncher.json's programs in
 # order, finds BUILD.sh and game/dqix there).
+#
+# Each zip also gets a ready-made launcher at its top (launcher/, docs/superpowers/
+# specs/2026-11-23-launcher-design.md "Premier lancement"): "DQIX Launcher.exe"
+# with SDL2.dll (Windows), dqix-launcher (Linux). It asks for the ROM on the first
+# launch and builds; afterwards game/dqix-launcher, rebuilt with every update,
+# takes over. It is built here and never kept in the repository.
 name: Release zip
 on:
   release:
@@ -14,13 +20,37 @@ permissions:
   contents: write
 jobs:
   zip:
-    runs-on: ubuntu-latest
+    # 22.04: a glibc old enough for SteamOS and older desktops (the Linux launcher)
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.tag_name }}
       - name: Make the zip
         run: python3 tools/make-release.py out
+      - name: Build tools for the launchers
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 libsdl2-dev zip
+      - name: The launcher's tests
+        run: sh tests/launcher/run.sh
+      - name: Windows launcher (mingw, SDL2 from libsdl-org's release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download release-2.30.9 --repo libsdl-org/SDL --pattern 'SDL2-devel-2.30.9-mingw.tar.gz' --dir sdl
+          echo "b188d165dc4a0372042bff3d0c18e9bb90772581e92a7b8b47b521b47714f75c  sdl/SDL2-devel-2.30.9-mingw.tar.gz" | sha256sum -c   # its SDL2.dll goes into the zip as is
+          tar -xzf sdl/SDL2-devel-2.30.9-mingw.tar.gz -C sdl
+          S=sdl/SDL2-2.30.9/x86_64-w64-mingw32
+          mkdir -p stage/win/DQIX-PC
+          x86_64-w64-mingw32-gcc -std=c99 -D_DEFAULT_SOURCE -O2 -I launcher -I runtime -I "$S/include/SDL2" \
+              -o "stage/win/DQIX-PC/DQIX Launcher.exe" launcher/*.c runtime/update.c \
+              -L "$S/lib" -lSDL2 -lwinhttp -lcomdlg32 -mwindows -lm -static-libgcc
+          cp "$S/bin/SDL2.dll" stage/win/DQIX-PC/
+      - name: Linux launcher
+        run: |
+          mkdir -p stage/linux/DQIX-PC
+          gcc -std=c99 -D_DEFAULT_SOURCE -O2 -I launcher -I runtime $(sdl2-config --cflags) \
+              -o stage/linux/DQIX-PC/dqix-launcher launcher/*.c runtime/update.c $(sdl2-config --libs) -lm
+          chmod +x stage/linux/DQIX-PC/dqix-launcher
       - name: Attach it to the release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -32,4 +62,8 @@ jobs:
           linux="Dragon-Quest-IX-Modern-$TAG-Linux-x64.zip"
           cp "$zip" "$linux"
           zip -q -d "$linux" 'DQIX-PC/*.bat' 'DQIX-PC/tools/*.ps1' || [ $? -eq 12 ]   # 12: nothing left to remove
+          (cd stage/win && zip -q "$GITHUB_WORKSPACE/$name" "DQIX-PC/DQIX Launcher.exe" DQIX-PC/SDL2.dll)
+          (cd stage/linux && zip -q "$GITHUB_WORKSPACE/$linux" DQIX-PC/dqix-launcher)
+          unzip -l "$name" | grep -q "DQIX-PC/DQIX Launcher.exe"
+          unzip -l "$linux" | grep -q "DQIX-PC/dqix-launcher"
           gh release upload "$TAG" "$name" "$linux" --clobber

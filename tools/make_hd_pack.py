@@ -2,6 +2,7 @@
 """Bundle the HD textures and movies into stored zips plus a manifest.
 
   make_hd_pack.py <textures_dir> <movies_dir> <out_dir> [--version 1] [--max-gb 1.9]
+                  [--extra launcher-back.jpg]
 
 Writes hd-pack-textures-N.zip (entries textures/<16 hex>.png), hd-pack-movies.zip
 (entries movies/<file>) and hd-pack.txt:
@@ -11,6 +12,11 @@ Writes hd-pack-textures-N.zip (entries textures/<16 hex>.png), hd-pack-movies.zi
 
 Entries are ZIP_STORED (the game's own minimal reader only does method 0).
 Each zip stays under --max-gb, zip overhead included.
+--extra puts the launcher's background picture in the movies zip as
+movies/launcher-back.jpg (installed as movies/launcher-back.jpg, read by
+launcher/launcher.c): the movies zip already changes with each movie fix, and
+a textures zip would make everyone fetch the textures again for one picture.
+It is never kept in the repository.
 """
 import argparse
 import hashlib
@@ -92,7 +98,10 @@ def main(argv=None):
     ap.add_argument("out_dir")
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--max-gb", type=float, default=1.9)
+    ap.add_argument("--extra", help="the launcher's background: a file named launcher-back.jpg")
     args = ap.parse_args(argv)
+    if args.extra and os.path.basename(args.extra) != "launcher-back.jpg":
+        raise SystemExit("--extra takes the launcher's background, a file named launcher-back.jpg")
 
     limit = int(args.max_gb * 1024 ** 3)
     textures = list_files(args.textures_dir, lambda n: TEXTURE_RE.match(n))
@@ -101,6 +110,8 @@ def main(argv=None):
         raise SystemExit("no <16 hex>.png textures found in %s" % args.textures_dir)
     if not movies:
         raise SystemExit("no .mpg/.sig movie files found in %s" % args.movies_dir)
+    if args.extra:
+        movies.append(("launcher-back.jpg", args.extra, os.path.getsize(args.extra)))
     os.makedirs(args.out_dir, exist_ok=True)
     for old in os.listdir(args.out_dir):
         if old == "hd-pack.txt" or (old.startswith("hd-pack-") and old.endswith(".zip")):

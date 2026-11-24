@@ -2,7 +2,7 @@
 
 Tenu par le rôle Intégration (voir `docs/roles/integration.md`). Les autres
 threads envoient leur compte rendu au coordinateur, qui relaie. Dernière mise à
-jour : 2026-10-28 (audit du cahier des charges, `main` = `19741c6`, v31.9).
+jour : 2026-11-23 (fusion de la PR #168, `main` = `68e627c`, v3.2).
 
 États : `à faire` · `en cours` · `en revue` · `fusionné` · `en pause` · `abandonné`.
 
@@ -45,6 +45,7 @@ jour : 2026-10-28 (audit du cahier des charges, `main` = `19741c6`, v31.9).
 | Étoiles des points de collecte (correctif) | Dev | [Dev] Corriger les étoiles des points de collecte | `claude/project-thread-jpw0mf` | fusionné | PR #132 (5d8ce11) | — |
 | RecompLauncher : raison de l'échec du build | Dev | — | `dev/build-fail-reason` | en cours | — | Avec `--prepare`, `tools/build-game.sh` se relance dans `build/build.log` et finit un échec par une ligne « BUILD FAILED (<étape>): <ligne d'erreur de la dernière étape> » ; `BUILD.bat`/`BUILD.sh` n'ajoutent plus la ligne générique ; sans `--prepare` rien ne change. Arrêt immédiat si Python (ou gcc, make sous Windows) manque : cause du cas joueur du 20/11 (« python: command not found », la v2.1 n'a pas la PR 153) |
 | Plugins graphify, ponytail, agent skills (règles, agents) | Intégration | — | `orga/plugins` | fusionné le 2026-11-18 | PR #160 (eaff069), suivi #161 | Puis `graphify extract . --code-only` dans `J:\DQIX-Enhanced-repo` |
+| Habitants en 3D : orientation (PNJ de comptoir de dos, signalé sur Discord le 2026-11-21) | Graph | [Graph] Habitants en 3D tournés du mauvais côté | `graph/npc3d-facing` | fusionné le 2026-11-23 | PR #168 (68e627c ; test cloud n° 1 FAIL sur c94fc0b, n° 2 PASS sur 5e42bbd, branche privée `tests/npc3d-facing-2` ; captures avant/après validées par Romuald) | `runtime/npc3d.c` seul : le modèle est tourné de `+0x60` moins l'angle de la caméra (`+0x70` du 2e argument, en DTCM), comme l'image 2D du jeu ; `DQIX_NPC3D_ROT` vaut `1,0` par défaut. Testé avec le modèle `n300` seulement (pas de DQ7/DQ8 dans le cloud) ; cas `+0x50 & 8` / `+0x90` jamais rencontré. Suivi possible (non bloquant) : repli de caméra presque verticale, débordement signé de `rel`. Pour la prochaine release ; prévenir le joueur sur Discord |
 
 ### Fichiers partagés touchés par les fils en cours (2026-10-28 soir)
 #33 est fusionnée : chaque fil rebase sur `main` avant sa PR, et les PR passent

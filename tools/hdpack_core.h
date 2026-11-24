@@ -44,9 +44,13 @@ typedef struct { char name[128]; long long size; char sha[65]; } HpZip;
 
 /* ---------------------------------------------------------------- log */
 static FILE* hp_logfile;    /* hd-pack.exe sets it; NULL = stderr */
+static char hp_last_log[200];   /* the last line logged (hd-pack.exe's reason when it fails) */
 static void hp_log(const char* fmt, ...) {
     va_list a; va_start(a, fmt);
+    va_list b; va_copy(b, a);
     vfprintf(hp_logfile ? hp_logfile : stderr, fmt, a);
+    vsnprintf(hp_last_log, sizeof hp_last_log, fmt, b);
+    va_end(b);
     va_end(a);
     if (hp_logfile) fflush(hp_logfile);
 }

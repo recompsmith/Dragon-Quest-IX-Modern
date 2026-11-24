@@ -21,6 +21,8 @@
   },
   "start": {
     "program": [
+      "game/dqix-launcher.exe",
+      "game/dqix-launcher",
       "game/dqix.exe",
       "game/dqix"
     ]
