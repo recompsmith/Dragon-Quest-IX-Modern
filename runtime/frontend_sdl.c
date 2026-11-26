@@ -5935,10 +5935,16 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
     modern_window(v, SX(50), SY(776), 980 * C, 160 * C);
     bestiary_piece(v, 3, 11, 107, 114, 12, 30, SX(84), SY(816) - 6 * KL * 0.85f, KL * 0.85f);
     SK_LINE(66, 842, 948);
-    for (int j = 0; j < 5; j++) {
+    for (int j = 0; j < 5; j++) {                                 /* (each centred in its column by its letters' own width: the game's name at the left, its number at the right) */
         float cx = 50 + 98 + 196 * j;
-        bestiary_piece(v, 3, 12, 126 + 13 * j, 48, 12, 30, SX(cx) - 24 * KL * 0.85f, SY(850), KL * 0.85f);
-        bestiary_piece(v, 3, 60, 126 + 13 * j, 54, 12, 30, SX(cx) - 27 * KL, SY(880), KL);
+        int y0 = 126 + 13 * j, span[2][2] = { { 12, 59 }, { 60, 113 } };
+        for (int q = 0; q < 2; q++) {
+            int lo = span[q][1] + 1, hi = span[q][0] - 1;
+            for (int y = y0; y < y0 + 12; y++) for (int x = span[q][0]; x <= span[q][1]; x++) if ((bp[y * 256 + x] & 0xFFFFFF) == 0xFBFBFB) { if (x < lo) lo = x; if (x > hi) hi = x; }
+            if (hi < lo) continue;
+            float k = q ? KL * 0.9f : KL * 0.8f, w = (float)(hi - lo + 3);
+            bestiary_piece(v, 3, lo - 1, y0, (int)w, 12, 30, SX(cx) - w * k / 2, SY(q ? 878 : 850), k);
+        }
     }
     /* the skill's table (the top screen) at the right, as big as its window */
     {   modern_window(v, SX(1050), SY(166), 832 * C, 770 * C);
