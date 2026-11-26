@@ -123,7 +123,7 @@ static int g_cc_step, g_cc_topeng, g_cc_fade, g_cc_fade_kb;      /* the creation
 static void cc_take_back(const uint32_t* tp);
 static int g_cc_n, g_cc_box[2][4];                               /* widescreen, the character's creation: its windows on the touch screen (creation_update): x, y, w, h */
 static int g_cc_at[2][2];                                         /* ...where each goes in the pop-up (DS pixels; as on the touch screen, but for Patty's last question) */
-static int g_name_typing = 0;                                     /* Modern > Type the name with the keyboard (the character's creation: name_typing_step()) */
+static int g_name_typing = 1;                                     /* Modern > Type the name with the keyboard (on by default since settings_version 5) (the character's creation: name_typing_step()) */
 static uint32_t g_type_q[64]; static int g_type_n;                /* ...the letters typed, not yet pressed on the game's keyboard ('\b' erase, '\n' OK) */
 static int g_tap_x, g_tap_y, g_tap_frames, g_tap_wait, g_tap_tries;   /* ...the game's key being pressed, for how long; then the frames to wait */
 static int g_pop_win[4];                                          /* widescreen: a page on the top screen without its backdrop, popped up (pop_update): x, y, w, h (w 0: none) */
@@ -3713,8 +3713,9 @@ static int ui_language_wanted(void) { return g_ui_language ? g_ui_language : rom
  * markers...). An older settings.ini keeps the player's own things (volume,
  * language, wireless, controls, gold farm) but takes these looks once.
  * settings_version 3: the modern windows, once (window_style 2).
- * settings_version 4: the townspeople in 3D, once (npc_3d 1). */
-#define SETTINGS_VERSION 4
+ * settings_version 4: the townspeople in 3D, once (npc_3d 1).
+ * settings_version 5: the name typed with the keyboard, once (name_typing 1). */
+#define SETTINGS_VERSION 5
 static const char* const LOOK_KEYS[] = {
     "mode", "render_scale", "resolution_3d", "window_scale", "layout", "single_screen", "swap_screens",
     "small_screen_corner", "small_screen_size", "small_screen_hidden", "small_screen_opacity", "small_screen_opacity_chosen",
@@ -3750,6 +3751,7 @@ static void settings_load(void) {
         if (!strcmp(key, "save_slot")) { int n = atoi(val); g_save_slot = n >= 1 && n <= SAVE_SLOTS ? n : 1; continue; }
         if (version < 2 && look_key(key)) continue;
         if (version < 4 && !strcmp(key, "npc_3d")) continue;       /* (on by default since v4) */
+        if (version < 5 && !strcmp(key, "name_typing")) continue;  /* (on by default since settings_version 5) */
         if (!strcmp(key, "player_name")) {                       /* the whole rest of the line (may have spaces) */
             const char* v = strchr(line, '=') + 1; while (*v == ' ') v++;
             snprintf(g_player_name, sizeof g_player_name, "%s", v);

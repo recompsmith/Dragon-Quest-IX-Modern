@@ -13,7 +13,7 @@ int   ini_load(const char* path, char** text);                           /* 1 re
 int   ini_save(const char* path, const char* text);                      /* path.tmp then renamed; 1 ok */
 /* one key of settings.ini: never writes when the file is there but couldn't be
  * read (a file with only that key would lose the player's settings); a new
- * file starts with settings_version (the game's SETTINGS_VERSION, 4); 1 ok */
+ * file starts with settings_version (the game's SETTINGS_VERSION, 5); 1 ok */
 int   settings_update(const char* path, const char* key, const char* value);
 
 /* ---- what the screen shows and whether PLAY is lit */
