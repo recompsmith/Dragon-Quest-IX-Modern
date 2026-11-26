@@ -1,4 +1,4 @@
-# DQIX Enhanced (fork romusan495/DQIX-EnhancedEU)
+# DQIX Enhanced (fork recompsmith/DQIX-EnhancedEU)
 
 Dragon Quest IX (DS) recompilé en C et exécuté nativement sur PC. Code :
 `recomp/` (recompilateur Python), `runtime/` (C : CPU, GPU 2D/3D, son, Wi-Fi,
@@ -9,12 +9,12 @@ Tâches en cours et décisions : **`docs/SUIVI.md`** (à lire en début de sessi
 Réponds en français. Messages de commit, noms de branches et PR en anglais.
 
 ## Où vit quoi
-- Dépôt GitHub `romusan495/DQIX-EnhancedEU`, branche `main` = seule source du code.
+- Dépôt GitHub `recompsmith/DQIX-EnhancedEU`, branche `main` = seule source du code.
 - `J:\DQIX-Enhanced-repo` = clone de dev, reste sur `main` (rôle Intégration).
 - `J:\DQIX-wt\<role>-<sujet>` = un worktree par thread de dev (voir plus bas).
-- `J:\DQIX-Enhanced` = dossier où Romuald joue (checkout de `main`).
+- `J:\DQIX-Enhanced` = dossier où recompsmith joue (checkout de `main`).
   **Ne jamais l'éditer** : seulement `git pull --ff-only` puis BUILD.bat, par le
-  rôle Intégration, avec l'accord de Romuald. Sauvegardes : `J:\DQIX-Backups\`.
+  rôle Intégration, avec l'accord de recompsmith. Sauvegardes : `J:\DQIX-Backups\`.
 
 ## Compiler (vérifié sur ce PC)
 ```
@@ -44,7 +44,7 @@ En PowerShell, lancer BUILD.bat en arrière-plan.
 - Ne jamais commiter : `*.nds`, `build/`, `game/`, sauvegardes, dumps, textures
   ou films upscalés, C généré (dérivé du jeu). Vérifier `git status` avant.
 - Pas de push, de fusion, de suppression de branche/worktree/fichier ni de
-  réécriture d'historique sans l'accord explicite de Romuald.
+  réécriture d'historique sans l'accord explicite de recompsmith.
 - Avant de modifier un fichier possédé par un autre rôle (`docs/roles/`), le
   demander au coordinateur. **Fichiers partagés** (`runtime/gl_render.c`,
   `runtime/menu_win32.c`, `runtime/frontend_sdl.c`, `runtime/gpu3d.c`,
