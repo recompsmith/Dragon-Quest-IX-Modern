@@ -1,6 +1,6 @@
 # Where the project stands
 
-> **This fork (romusan495/DQIX-EnhancedEU)** has no tags and no `stable`
+> **This fork (recompsmith/DQIX-EnhancedEU)** has no tags and no `stable`
 > branch: the names below come from the upstream project. Here v31 stable is
 > commit `9e0666a` ("v31: stable"), and `main` carries the EU ROM support and
 > the later features. Current work: `docs/SUIVI.md`.
