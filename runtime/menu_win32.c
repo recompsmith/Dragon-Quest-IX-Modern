@@ -10,6 +10,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <wchar.h>
+#ifndef _WIN32
+#include <errno.h>
+#include <spawn.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+extern char** environ;
+#endif
 
 /* ---------------------------------------------------------------- the menus, on every system
  * One tree, built by menu_init: the menu bar shows it (Windows) and so does
@@ -1019,7 +1027,58 @@ void session_window_close(void) {
 #else
 int choice_box(SDL_Window* win, const char* title, const char* text, const char* const* buttons, int n, int def, int cancel,
                const char* check, int* checked) { (void)win; (void)title; (void)text; (void)buttons; (void)n; (void)def; (void)cancel; (void)check; (void)checked; return -1; }
-char* ask_text(SDL_Window* win, const char* title, const char* prompt) { (void)win; (void)title; (void)prompt; return NULL; }
+/* Desktop text entry on Linux. Pass arguments directly, so names and bug
+ * descriptions are never interpreted by a shell. A cancelled dialog stays
+ * cancelled; only a missing helper falls back to the other desktop tool. */
+static char* dialog_text(char* const argv[], int* missing) {
+    int fd[2];
+    *missing = 0;
+    if (pipe(fd) != 0) return NULL;
+    posix_spawn_file_actions_t actions;
+    int rc = posix_spawn_file_actions_init(&actions);
+    if (rc) { close(fd[0]); close(fd[1]); return NULL; }
+    rc = posix_spawn_file_actions_adddup2(&actions, fd[1], STDOUT_FILENO);
+    if (!rc && fd[0] != STDOUT_FILENO) rc = posix_spawn_file_actions_addclose(&actions, fd[0]);
+    if (!rc && fd[1] != STDOUT_FILENO) rc = posix_spawn_file_actions_addclose(&actions, fd[1]);
+    pid_t child;
+    if (!rc) rc = posix_spawnp(&child, argv[0], &actions, NULL, argv, environ);
+    posix_spawn_file_actions_destroy(&actions);
+    close(fd[1]);
+    if (rc) { close(fd[0]); *missing = rc == ENOENT || rc == EACCES; return NULL; }
+    const size_t cap = 65536;
+    char* text = malloc(cap + 1);
+    size_t used = 0;
+    int failed = text == NULL;
+    char chunk[1024];
+    for (;;) {
+        ssize_t n = read(fd[0], chunk, sizeof chunk);
+        if (n < 0 && errno == EINTR) continue;
+        if (n <= 0) { if (n < 0) failed = 1; break; }
+        if (!failed && (size_t)n <= cap - used) { memcpy(text + used, chunk, (size_t)n); used += (size_t)n; }
+        else failed = 1;                    /* drain excess output before waiting */
+    }
+    close(fd[0]);
+    int status;
+    pid_t waited;
+    do { waited = waitpid(child, &status, 0); } while (waited < 0 && errno == EINTR);
+    if (failed || waited < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) { free(text); return NULL; }
+    if (used && text[used - 1] == '\n') { used--; if (used && text[used - 1] == '\r') used--; }
+    text[used] = 0;
+    return text;
+}
+char* ask_text(SDL_Window* win, const char* title, const char* prompt) {
+    int missing;
+    char* kd[] = { "kdialog", "--title", (char*)T(title), "--inputbox", (char*)T(prompt), NULL };
+    char* text = dialog_text(kd, &missing);
+    if (missing) {
+        char* ze[] = { "zenity", "--entry", "--title", (char*)T(title), "--text", (char*)T(prompt), NULL };
+        text = dialog_text(ze, &missing);
+    }
+    if (missing && win) SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, T("Text entry"),
+        T("Text entry needs kdialog or zenity. Install either one, then try again."), win);
+    if (win) SDL_RaiseWindow(win);
+    return text;
+}
 float display_mm_per_pixel(SDL_Window* win) { (void)win; return 0; }
 int display_hdr_on(SDL_Window* win) { (void)win; return 0; }
 void menu_init(SDL_Window* win, const char* const* shell_names, int n_shells, int all) { (void)win; build(all, shell_names, n_shells); }

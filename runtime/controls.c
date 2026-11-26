@@ -180,7 +180,8 @@ uint16_t controls_ds_pad(SDL_GameController* p) {
 
 int controls_key_action(SDL_Scancode sc, Uint16 mod) {
     int m = mods_of(mod), best = -1, best_mods = -1;
-    for (int a = CA_N_DS; a < CA_N; a++)
+    /* Menus use the player's DS bindings for navigation and confirmation too. */
+    for (int a = 0; a < CA_N; a++)
         for (int s = 0; s < 2; s++) {
             int k = g_ctl_key[a][s];
             if (!k || (k & 0xFFFF) != (int)sc) continue;

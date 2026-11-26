@@ -81,6 +81,10 @@ réglages sont dans le menu du jeu (Échap). Les mises à jour se font par
 RecompLauncher, ou en décompressant la nouvelle version puis en relançant
 `BUILD.sh`. Le Wi-Fi et les sessions en ligne ne sont pas testés sous Linux.
 
+Les fenêtres de saisie (montant des codes de triche, nom en multijoueur,
+description d'un rapport) utilisent `kdialog`, ou `zenity` s'il n'est pas
+disponible. Installez l'un des deux si votre bureau ne le fournit pas déjà.
+
 **Ne partagez jamais les dossiers `game` et `build`** : ils contiennent le jeu.
 
 ---
@@ -130,4 +134,7 @@ what it needs. Put your ROM in `rom` and run `sh BUILD.sh` (or
 There is no menu bar on Linux: every setting is in the game menu (Esc).
 Updates come through RecompLauncher, or by unzipping the new version and
 running `BUILD.sh` again. Wi-Fi and online sessions are untested on Linux.
+Text entry (cheat amounts, multiplayer names, bug report descriptions) uses
+`kdialog`, falling back to `zenity` when it is not available. Install either
+one if your desktop does not already provide it.
 **Never share the `game` and `build` folders**: they hold the game.

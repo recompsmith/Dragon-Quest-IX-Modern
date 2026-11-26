@@ -7252,11 +7252,11 @@ static int game_menu_event(const SDL_Event* e) {
         else if (k == SDL_SCANCODE_PAGEUP) id = gamemenu_key(GM_PAGEUP);
         else if (k == SDL_SCANCODE_PAGEDOWN) id = gamemenu_key(GM_PAGEDOWN);
         else if (e->key.repeat) break;
-        else if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE || a == CA_A) {
+        else if (k == SDL_SCANCODE_RETURN || k == SDL_SCANCODE_KP_ENTER || k == SDL_SCANCODE_SPACE || k == SDL_SCANCODE_RIGHT || a == CA_A || a == CA_RIGHT) {
             if (k == SDL_SCANCODE_RETURN && (e->key.keysym.mod & KMOD_ALT)) do_action(MI_FULL);
             else id = gamemenu_key(GM_OK);
         }
-        else if (k == SDL_SCANCODE_BACKSPACE || k == SDL_SCANCODE_LEFT || a == CA_B) id = gamemenu_key(GM_BACK);
+        else if (k == SDL_SCANCODE_BACKSPACE || k == SDL_SCANCODE_LEFT || a == CA_B || a == CA_LEFT) id = gamemenu_key(GM_BACK);
         else if (a == CA_MENU) gamemenu_close();
         else if (a == CA_FULL || a == CA_SHOT || a == CA_VOLDOWN || a == CA_VOLUP) { hotkey(a); gamemenu_changed(); }
         break;
@@ -7560,7 +7560,7 @@ static void handle_events(void) {
             int a = controls_key_action(k, e.key.keysym.mod);
             { int o = controls_key_owner((int)k, NULL); if (o >= 0 && o < CA_N_DS) g_hint_pad = 0; }   /* a DS button on the keyboard */
             if (a == CA_FULL && in2) { second_window_fullscreen(); settings_save(); break; }
-            if (a >= 0) hotkey(a);
+            if (a >= CA_N_DS) hotkey(a);             /* DS buttons are polled by key_bits(), not shortcuts */
             break;
         }
         case SDL_TEXTINPUT:

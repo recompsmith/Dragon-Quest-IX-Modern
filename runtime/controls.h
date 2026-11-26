@@ -38,7 +38,7 @@ void controls_defaults(void);
 void controls_load(void);                      /* controls.ini, or the defaults */
 int controls_save(void);                       /* 0: not written (the launcher says so) */
 
-int controls_key_action(SDL_Scancode sc, Uint16 mod);   /* the action a key press starts, or -1 */
+int controls_key_action(SDL_Scancode sc, Uint16 mod);   /* DS button or shortcut, most specific modifiers first; -1 if unbound */
 int controls_key_held(int action, const Uint8* ks);     /* one of its keys is down */
 int controls_pad_held(int action, SDL_GameController* p);
 int controls_pad_down(SDL_GameController* p, int pad);  /* a controller button (or trigger) is down */
