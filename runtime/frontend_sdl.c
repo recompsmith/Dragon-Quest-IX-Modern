@@ -1047,8 +1047,10 @@ static void bestiary_update(int a_on_top) {
     g_bmode = m;
     if (m) g_rec_at = g_frame;
 }
+static float g_p3d_now;                                           /* the 3D drawn bigger by a modern screen (Equip's character...): its window pixels to a DS pixel (auto_scale) */
 static float* bestiary_piece(GlPresent* v, int screen, float sx, float sy, float sw, float sh, int mode, float x, float y, float k) {
     static float spare[10];
+    if (screen == 4 && mode == 11 && k * v->sc > g_p3d_now) g_p3d_now = k * v->sc;
     if (v->npiece >= GL_MAX_PIECES) return spare;
     float* q = v->piece[v->npiece++];
     q[4] = (float)screen; q[5] = sx; q[6] = sy; q[7] = sw; q[8] = sh; q[9] = (float)mode;
@@ -2352,7 +2354,7 @@ static void caract_pieces(GlPresent* v) {
     /* the category shown: its title, its lines, its page */
     CA_WIN(bx, top, bw, H);
     float by = top + (H - bh) / 2 + 3;
-    bestiary_piece(v, 1, CA_BX, CA_BY, CA_BW, CA_BH, 30, bx + 3, by, bk);                      /* (30: its letters, not the game's lines) */
+    bestiary_piece(v, 1, CA_BX, CA_BY, CA_BW, CA_BH, 48, bx + 3, by, bk);                      /* (48: its letters, the greyed ones too (a job not played: page 2), not the game's lines) */
     {   /* under its title (a category's name alone in the middle of its first row; not the stats' first row) */
         int e = caract_screen(); const uint32_t* bp = g_engine_out[e == 1 ? 1 : 0];
         int mid = 0, side = 0;
@@ -4842,6 +4844,8 @@ static void auto_scale(void) {
             if (r[2] > 0 && x[1] > 0) { float p = v.sc * r[2] / x[1]; if (p > need) need = p; }
         }
     }
+    if (g_p3d_now > need) need = g_p3d_now;                       /* (a modern screen's 3D, drawn bigger than the screen's place: as sharp) */
+    g_p3d_now = 0;
     int want = (int)ceilf(need * 1.5f - 0.05f), top = gl_render_max_scale();
     if (top > g_gpu_cap) top = g_gpu_cap;
     if (want < 2) want = 2;

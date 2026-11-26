@@ -611,6 +611,8 @@ static const char* FS_COPY =
     "    float a = (1.0 - bg) * c.a; o_color = vec4(r * a, a); return; }\n"
     "  if (u_mode == 32) { vec3 r = c.rgb / max(c.a, 0.001); float sat = max(r.r, max(r.g, r.b)) - min(r.r, min(r.g, r.b));\n"   /* (a list on its dark panel: the letters and the grey icons, not the panel (0.19) nor its blue frame) */
     "    float a = smoothstep(0.30, 0.42, L) * smoothstep(0.30, 0.15, sat) * c.a; o_color = vec4(r * a, a); return; }\n"
+    "  if (u_mode == 48) { vec3 r = c.rgb / max(c.a, 0.001); float mx = max(r.r, max(r.g, r.b)), sat = (mx - min(r.r, min(r.g, r.b))) / max(mx, 0.02), lg = dot(r, vec3(0.299, 0.587, 0.114));\n"   /* (as 30, and the greyed letters (121, 121, 121, smoothed) too: a job not played's stats; not the grey lines (130)) */
+    "    float g = smoothstep(0.30, 0.40, lg) * (1.0 - smoothstep(0.485, 0.50, lg)) * smoothstep(0.12, 0.05, sat) * c.a, t = letters(5), a = max(t, g); vec3 col = mix(vec3(0.70), vec3(0.93), t / max(a, 0.001)); o_color = vec4(col * a, a); return; }\n"
     "  if (u_mode == 30) { float t = letters(5), y = yellows(), rd = reds(), a = max(max(t, y), rd);\n"   /* (the windows round a menu: letters light or greyed (0.73), not the grey lines (0.51, 0.64)) */
     "    vec3 col = mix(mix(vec3(0.93), vec3(0.98, 0.78, 0.16), y / max(a, 0.001)), vec3(0.95, 0.26, 0.22), rd / max(a, 0.001)); o_color = vec4(col * a, a); return; }\n"
     "  if (u_mode == 29) { float t = letters(4), y = yellows(), rd = reds(), a = max(max(t, y), rd);\n"   /* (as 3, for a window going grey: its letters (0.64, 0.73) in white, not its grey lines (0.51); letters(4): above 0.57) */
