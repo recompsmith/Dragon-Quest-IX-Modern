@@ -8,7 +8,7 @@
  * - the local image service (ComfyUI's Python and graphics card, no need to
  *   start ComfyUI): upscale.bat at TEXHD_SERVICE, or else at SERVICE_DEFAULT.
  *   Its mode is TEXHD_MODEL, "auto" by default (FatalPixels, UltraSharp blended
- *   into the smooth areas: Romuald's choice of 2026-11-14). Only the 3D
+ *   into the smooth areas: recompsmith's choice of 2026-11-14). Only the 3D
  *   textures (textures/dump) go through here: the 2D ones (dump-2d: letters,
  *   menus) are never given to an AI, which garbles pixel-art text;
  * - else Real-ESRGAN (realesrgan-ncnn-vulkan, realesrgan-x4plus-anime) in

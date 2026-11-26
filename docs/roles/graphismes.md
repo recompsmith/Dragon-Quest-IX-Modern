@@ -11,7 +11,7 @@ Lite, restyle visuel des fenêtres et des boîtes de dialogue, maquettes.
   `tools/movie_frames.py`, `runtime/hdmovie.c` / `.h`, `skins/`.
 - Hors git, dans le dossier de jeu : `game\textures`, `game\movies`,
   `game\textures-hd-outil`. Ils ne sont jamais versionnés ; sauvegarde dans
-  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de Romuald.
+  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de recompsmith.
 
 ## Partagé
 Voir la liste des fichiers partagés dans `CLAUDE.md` (surtout `gl_render.c`,
@@ -22,7 +22,7 @@ l'un après l'autre, pas en parallèle.
 - Textures HD : service d'images local (skill `comfyui-images`,
   `J:\Outil\IA\ComfyUI_windows_portable\claude-service\upscale.bat`, autre
   chemin : `TEXHD_SERVICE`), mode `auto` = FatalPixels avec UltraSharp fondu
-  dans les zones lisses (`TEXHD_MODEL` pour un autre mode). Choix de Romuald du
+  dans les zones lisses (`TEXHD_MODEL` pour un autre mode). Choix de recompsmith du
   2026-11-14 : Real-ESRGAN anime (plastique, contours noirs) est abandonné, la
   méthode 5 aussi (mélange à 50 % avec un agrandissement Lanczos, toujours
   possible avec `TEXHD_SHARP=50`). Sans le service, `textures-hd` reprend
