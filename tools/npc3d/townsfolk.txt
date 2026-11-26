@@ -1,7 +1,7 @@
 # DQIX townsperson (data/ani/<type>.spr) -> the character from Dragon Quest VII
 # (dq7, 3DS: CHARACTER/<model>.bcmdl.lz) or Dragon Quest VIII (dq8, 3DS:
 # data/Model/npc/<model>.bch) drawn in its place, with that game's own colours.
-# Chosen one by one by Romuald from pictures; types left out stay pictures.
+# Chosen one by one by recompsmith from pictures; types left out stay pictures.
 # Optional 4th column: size next to its picture (animals: their picture is
 # mostly empty above them), 1 = as tall.
 # Stornway

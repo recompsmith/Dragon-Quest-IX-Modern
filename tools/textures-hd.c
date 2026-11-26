@@ -18,7 +18,7 @@
  *   either: Real-ESRGAN turns their few pixels into flat smudges in the wrong
  *   colours (the monsters walking on the map), and the game enlarges them with
  *   xBR instead (gl_render.c PACK_MIN_TEXELS, the same limit);
- * - Real-ESRGAN's picture is used as it is (smooth and painted, Romuald's
+ * - Real-ESRGAN's picture is used as it is (smooth and painted, recompsmith's
  *   choice); TEXHD_SHARP=<0..100> mixes in that % of a sharp (Lanczos)
  *   enlargement of the original instead, which keeps the pixels' grain
  *   (50 = the earlier "method 5").
