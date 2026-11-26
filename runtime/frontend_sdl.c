@@ -5676,6 +5676,10 @@ static int xmenu_detect(int a_on_top) {
             }
         }
         if (t0 < 0) { t0 = hy - 3; t1 = hy + 3; }
+        if (hm && t1 - t0 > 12) {                                  /* (the HD letters' whole boxes (12 rows) of two lines touching: one run; the hand's line alone) */
+            if (t0 < hy - 6) t0 = hy - 6;
+            if (t1 > hy + 5) t1 = hy + 5;
+        }
         int tx = hx1 + 1;                                         /* (from 2 before its letters: the hand stays out, the band still while the hand moves) */
         for (int found = 0; tx < end && !found; tx++)
             for (int y = t0; y <= t1 && !found; y++) found = XM_INK(y * 256 + tx);
