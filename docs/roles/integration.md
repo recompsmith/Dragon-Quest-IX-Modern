@@ -24,21 +24,21 @@ dossier de jeu, tenue du suivi central.
    `/pr-review-toolkit:review-pr` (code-reviewer, silent-failure-hunter ;
    pr-test-analyzer si `tests/` change). Les corrections reviennent au thread de dev.
 3. Sous-agent `dqix-build-check` sur la branche (ou son worktree).
-4. Fusion dans `main` **avec l'accord de Romuald** ; mise à jour de `docs/SUIVI.md`.
+4. Fusion dans `main` **avec l'accord de recompsmith** ; mise à jour de `docs/SUIVI.md`.
 5. Dossier de jeu, avec son accord : `git -C J:\DQIX-Enhanced status` (doit être
    propre), `git pull --ff-only`, BUILD.bat, puis `dqix-build-check` sur `J:\DQIX-Enhanced`.
 
 ## À savoir
 - Sauvegarde du dossier de jeu avant une mise à jour risquée : `J:\DQIX-Backups\<date>-<raison>`.
-- Les branches fusionnées ne se suppriment qu'avec l'accord de Romuald.
+- Les branches fusionnées ne se suppriment qu'avec l'accord de recompsmith.
 - Pas de CI GitHub : la vérification se fait sur ce PC.
 
-## Release hebdomadaire (décidé avec Romuald le 2026-10-22)
+## Release hebdomadaire (décidé avec recompsmith le 2026-10-22)
 Une tâche Claude planifiée par semaine ; rien n'est publié sans le feu vert de
-Romuald dans le thread `[Intégration] Releases hebdomadaires`.
-Numérotation (Romuald, 2026-10-30) : versions entières à partir de v32
+recompsmith dans le thread `[Intégration] Releases hebdomadaires`.
+Numérotation (recompsmith, 2026-10-30) : versions entières à partir de v32
 (v32, v33...). Les v31.1 à v31.11 l'ont précédée.
-Depuis le 2026-11-13 (Romuald) : après v47 vient **v2.0** ; corrections =
+Depuis le 2026-11-13 (recompsmith) : après v47 vient **v2.0** ; corrections =
 v2.1, v2.2... ; gros ajouts = v3, v4... `update.c` range un majeur < 26 après
 v47. Les jeux en v47 ou avant lisent la première ligne `DQIX_VERSION` de
 `version.h`, même en commentaire : à chaque release, mettre à jour la ligne

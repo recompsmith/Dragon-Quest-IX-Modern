@@ -11,7 +11,7 @@ jour : 2026-10-28 (audit du cahier des charges, `main` = `19741c6`, v31.9).
 | Tâche | Rôle | Thread | Branche / PR | État | Dépend de | Prochaine étape |
 |---|---|---|---|---|---|---|
 | Fiches du haut en pop-up, magasins sur un écran | Dev | [Dev] Fiches en pop-up au centre | PR #42, #44 | fusionné (v31.9) | — | Boîte description magasin : fin de fusion dans ce thread |
-| Cadre moderne sur toutes les fenêtres (+ fiches, confirmations, chargements du § 5.2) | Graph | [Graph] Cadre moderne sur toutes les fenêtres | `claude/project-thread-r80vbi` | en cours | PR #44 | Captures, accord de Romuald |
+| Cadre moderne sur toutes les fenêtres (+ fiches, confirmations, chargements du § 5.2) | Graph | [Graph] Cadre moderne sur toutes les fenêtres | `claude/project-thread-r80vbi` | en cours | PR #44 | Captures, accord de recompsmith |
 | Police unique sans noms coupés | Langues | [Langues] Police unique sans noms coupés | — | en cours | — | Compte rendu du thread |
 | Menu d'options dans le jeu (Échap / bouton PS), puis style moderne | Dev | [Coord] Audit et feuille de route | PR #33, PR suivante | fusionné (#33 `e17a0dd`) ; style moderne en revue | — | — |
 | Tests automatiques réparés, test de fumée `tests/smoke/run.py` | Dev | [Coord] Audit et feuille de route | PR #45 | fusionné | — | — |
@@ -26,7 +26,7 @@ jour : 2026-10-28 (audit du cahier des charges, `main` = `19741c6`, v31.9).
 | Caméra dézoomée en combat | Dev | — | — | à faire | — | Plan avant de coder (ne pas toucher aux boîtes de combat) |
 | BUILD : « cmp: commande introuvable » (`tools/build-game.sh`) | Intégration | — | — | à faire | — | Installer `diffutils` dans MSYS2 ou éviter `cmp` ; le build réussit quand même |
 | Textures des monstres sur la carte (pack HD) | Graph | [Graph] Corriger les textures des monstres sur la carte | `claude/project-thread-3zdjvn` | fusionné | PR #115 | — |
-| Écran Équiper de Tsu (corrections) | Graph | [Graph] Corriger le nouvel écran Équiper | `claude/project-thread-v4a74b` | fusionné | PR #117 | — |
+| Écran Équiper de TitanFr199 (corrections) | Graph | [Graph] Corriger le nouvel écran Équiper | `claude/project-thread-v4a74b` | fusionné | PR #117 | — |
 | Étoiles des points de collecte sur la carte | Dev | [Dev] Étoiles des points de collecte sur la carte | `claude/project-thread-rila1e` | fusionné | PR #121 | — |
 | Trophées style Steam | Dev | [Dev] Ajouter des trophées style Steam | `claude/project-thread-j97l6o` | fusionné | PR #123 (59b08f4) | Téléchargement des images (`tools/trophy_badges.py`, badges RetroAchievements, jamais dans le dépôt) au premier BUILD.bat pas encore testé sur Windows ; sans réseau il s'arrête après 5 échecs ou 4 min et le build continue |
 | Remappage manette (correctif) | Dev | [Dev] Corriger le remappage manette | `claude/project-thread-8ospr7` | fusionné | PR #126 (093342a) | Touche `runtime/frontend_sdl.c`, `runtime/menu_win32.c` et 2 textes de `lang/*.txt` ; `J:\DQIX-Enhanced` pas recompilé ; à inclure dans la prochaine release (v47) |
@@ -36,8 +36,8 @@ jour : 2026-10-28 (audit du cahier des charges, `main` = `19741c6`, v31.9).
 | Écran titre moderne | Graph | [Graph] Moderniser l'écran titre | `claude/project-thread-qdf16l` | fusionné | PR #134 | Film d'intro derrière « Commencer l'aventure », image de fond lue localement dans `game/ui/title-back.png` (jamais commitée), menus en bas à droite ; touche `runtime/gl_render.c` (`FS_COPY` 36-37) et `runtime/frontend_sdl.c` ; pour la v2.0 |
 | PNJ en 3D | Graph | [Graph] Remplacer les PNJ en image par la 3D | `claude/project-thread-o775tm` | fusionné | PR #135 | Touche `runtime/gl_render.c`, `runtime/gpu3d.c`, `runtime/menu_win32.c` (Graphismes > Habitants en 3D), `runtime/frontend_sdl.c` (`npc_3d`, `settings_version` = 4), `tools/build-game.sh` (bloc « townspeople in 3D » : `$ROM`, `rom/dq7-path.txt` / `rom/dq8-path.txt` hors du dépôt), `BUILD.bat` (`python-numpy`), libellé « Townspeople in &3D (Enhanced) » dans `lang/*.txt` ; pas testé sous Windows ; pour la v2.0 |
 | PNJ en 3D : ROM 3DS de DQVII/DQVIII | Graph | [Graph] Remplacer les PNJ en image par la 3D | — | fusionné | PR #138 | Dossier `rom/3DS` (README) pour les ROM 3DS de DQVII/DQVIII ; touche `tools/build-game.sh` (bloc townspeople) et `.gitignore` ; pas testé sous Windows ni avec une vraie ROM 3DS ; pour la v2.0 |
-| Corrections texte HD, insignes Prêtre/Artiste martial (Tsu) | Graph | — | `dev/hdtext-fixes-v66` | fusionné | PR #136 | Touche `runtime/frontend_sdl.c`, `runtime/hdtext.c`, images `tools/job_*` |
-| Création du personnage en écran large (Tsu) | Graph | — | `dev/creation-modern` | fusionné | PR #139 | Touche `runtime/frontend_sdl.c`, `runtime/gl_render.c` (mode 38), `runtime/gl_render.h` (`GL_LAYER_KEY3`) |
+| Corrections texte HD, insignes Prêtre/Artiste martial (TitanFr199) | Graph | — | `dev/hdtext-fixes-v66` | fusionné | PR #136 | Touche `runtime/frontend_sdl.c`, `runtime/hdtext.c`, images `tools/job_*` |
+| Création du personnage en écran large (TitanFr199) | Graph | — | `dev/creation-modern` | fusionné | PR #139 | Touche `runtime/frontend_sdl.c`, `runtime/gl_render.c` (mode 38), `runtime/gl_render.h` (`GL_LAYER_KEY3`) |
 | Création du personnage en anglais/italien/allemand (correctif) | — | — | — | fusionné | PR #142 (a62de35) | Touche `runtime/frontend_sdl.c` ; dans la v2.1 |
 | Étoiles des points de collecte (correctif) | Dev | [Dev] Corriger les étoiles des points de collecte | `claude/project-thread-jpw0mf` | fusionné | PR #132 (5d8ce11) | — |
 
@@ -69,14 +69,14 @@ releases v31.1 à v31.9.
 
 | Date | Décision | Raison |
 |---|---|---|
-| 2026-10-21 | Le dépôt `romusan495/Dragon-Quest-IX-Modern` est la seule source ; le dossier de jeu ne change que par `git pull --ff-only` + BUILD.bat. | Des éditions directes dans le dossier de jeu ne revenaient pas au dépôt. |
-| 2026-10-21 | Méthode 5 (IA + original mélangés) pour toutes les textures HD. | Choix de Romuald après comparaison. |
+| 2026-10-21 | Le dépôt `recompsmith/Dragon-Quest-IX-Modern` est la seule source ; le dossier de jeu ne change que par `git pull --ff-only` + BUILD.bat. | Des éditions directes dans le dossier de jeu ne revenaient pas au dépôt. |
+| 2026-10-21 | Méthode 5 (IA + original mélangés) pour toutes les textures HD. | Choix de recompsmith après comparaison. |
 | 2026-10-21 | 5 rôles, un thread par fonctionnalité, un worktree par thread de dev. | Plan de réorganisation validé. |
-| 2026-10-22 | Release GitHub hebdomadaire : sources seules (jamais ROM, exe ni données du jeu), publiée après le feu vert de Romuald. | Choix de Romuald ; seul son PC peut vérifier le build. |
-| 2026-10-22 | Ne jamais toucher aux boîtes de combat (commandes, PV/PM). | Choix de Romuald. |
-| 2026-10-22 | Pas de test de jeu sur le PC de Romuald : tests dans le cloud (Linux, xvfb), ROM EU et USA. | Demande de Romuald. |
-| 2026-10-23 | Une seule fenêtre : la carte en haut à droite, plus de seconde fenêtre ; options de disposition retirées des menus. | Choix de Romuald (« comme un vrai jeu PC »). |
-| 2026-10-28 | Multijoueur, Wi-Fi/DQVC et réseau hors périmètre (`wifi.c`, `wfc.c`, `net.c`, `relay.c`, `upnp.c`, `portmap.c`, `session.c`, `air.c`, `hosting.c`, `third_party/slirp`, `tools/relay/`). | Cahier des charges § 12 et consigne de Romuald. |
+| 2026-10-22 | Release GitHub hebdomadaire : sources seules (jamais ROM, exe ni données du jeu), publiée après le feu vert de recompsmith. | Choix de recompsmith ; seul son PC peut vérifier le build. |
+| 2026-10-22 | Ne jamais toucher aux boîtes de combat (commandes, PV/PM). | Choix de recompsmith. |
+| 2026-10-22 | Pas de test de jeu sur le PC de recompsmith : tests dans le cloud (Linux, xvfb), ROM EU et USA. | Demande de recompsmith. |
+| 2026-10-23 | Une seule fenêtre : la carte en haut à droite, plus de seconde fenêtre ; options de disposition retirées des menus. | Choix de recompsmith (« comme un vrai jeu PC »). |
+| 2026-10-28 | Multijoueur, Wi-Fi/DQVC et réseau hors périmètre (`wifi.c`, `wfc.c`, `net.c`, `relay.c`, `upnp.c`, `portmap.c`, `session.c`, `air.c`, `hosting.c`, `third_party/slirp`, `tools/relay/`). | Cahier des charges § 12 et consigne de recompsmith. |
 
 ## Audit du 2026-10-28 (cahier des charges de modernisation)
 
@@ -104,11 +104,11 @@ code de `main` (`19741c6`, v31.9) pour ne rien refaire et choisir la suite.
 TV = terminé et vérifié · AA = implémenté, à améliorer · P = partiel ·
 N = non implémenté · B = bloqué par une dépendance · ? = indéterminé.
 « Vérifié » = testé dans le cloud sur les ROM EU et USA avec captures, et
-validé par Romuald avant fusion.
+validé par recompsmith avant fusion.
 
 | Domaine (§ du cahier) | État | Preuves | Remarques |
 |---|---|---|---|
-| Compilation reproductible (§4) | TV | `tools/build-game.sh` : build EU Linux exit 0 le 28/10 (~6 min) ; BUILD.bat sur le PC de Romuald | Avertissement `cmp` sous MSYS2 (tâche ci-dessus) |
+| Compilation reproductible (§4) | TV | `tools/build-game.sh` : build EU Linux exit 0 le 28/10 (~6 min) ; BUILD.bat sur le PC de recompsmith | Avertissement `cmp` sous MSYS2 (tâche ci-dessus) |
 | Tests automatiques (§4, §11) | AA | `tests/semantics/run.py`, `tests/verify_decode.py`, `tests/gpu3d/t3d.c` | `semantics` et `gpu3d` ne compilaient plus (réparés dans ce lot) ; `verify_decode` passe. Pas de test de non-régression du jeu en dehors des recettes cloud des threads |
 | Journal d'erreurs (§4) | AA | `last-run.log`, F10 `report.c`, `DQIX_*` dans `docs/TECHNICAL.md` | Bruit répétitif (écritures VRAM non mappée en entrée de combat, null-pointer au démarrage) |
 | Sauvegardes (§4) | TV | `card.c`, copies `save-backups/` (#19), sauvegarde auto #41 ; même `dqix.sav` pour EU et USA | — |
@@ -187,14 +187,14 @@ Chaque ligne = une tâche courte pour un thread, avec captures pour tout visuel.
 |---|---|---|---|---|---|
 | 1 | P0 | ✓ Réparer les tests automatiques (PR #45) | Dev | très faible (`tests/` seul) | Détecte les régressions du recompilateur et de la 3D |
 | 2 | P0 | ✓ (PR #45) Script de test de fumée cloud : build EU + USA, recette d'entrée, captures aux images clés, comparaison avec des captures de référence (sauvegarde de test hors dépôt) | Dev / Intégration | faible (`tests/` seul) | Non-régression visuelle avant chaque fusion |
-| 3 | P0 | PR #33 reprise par Romuald : `main` fusionné, testé EU + USA ; à pousser et fusionner | Dev | moyen (`frontend_sdl.c`, `menu_win32.c`) | Options au clavier et à la manette, en plein écran |
+| 3 | P0 | PR #33 reprise par recompsmith : `main` fusionné, testé EU + USA ; à pousser et fusionner | Dev | moyen (`frontend_sdl.c`, `menu_win32.c`) | Options au clavier et à la manette, en plein écran |
 | 4 | P1 | Terminer les fils en cours (cadre moderne, police unique, pop-up) | Graph, Langues, Dev | — | Interface homogène |
 | 5 | P1 | Interface PC traduite (FR d'abord) selon la langue choisie | Langues | moyen (fichiers partagés, après #3) | Cohérence pour un joueur francophone |
 | 6 | P1 | Contrôle des packs de textures : dimensions multiples de l'original, alpha, PNG illisibles, planche avant/après | Graph | très faible (outil à part) | Ressources remplaçables et restaurables en confiance |
 | 7 | P1 | Liste des monstres et journal des quêtes en pop-up, après une recette pour les atteindre | Dev | faible | Finir le mono-écran |
 | 8 | P1 | Caméra dézoomée en combat (sans toucher aux boîtes) | Dev | moyen | Suggestion de sackchief |
 | 9 | P2 | Études (lecture seule) : structure du sac et des recettes d'alchimie en RAM, avant tout tri, filtre ou aide à l'alchimie | Dev | nul | Prépare § 7 |
-| 10 | P2 | Retirer le code mort des anciennes dispositions | Dev | moyen | Seulement avec l'accord de Romuald |
+| 10 | P2 | Retirer le code mort des anciennes dispositions | Dev | moyen | Seulement avec l'accord de recompsmith |
 | 11 | P3 | Effets et éclairage, journal des cartes au trésor, encyclopédie | — | élevé | Après stabilisation |
 
 ### Nouvelles idées du cahier (§ 5 à 9) et faisabilité
@@ -218,7 +218,7 @@ coût : S = un soir, M = quelques jours, L = plus.
 | Fiches de personnages, confirmations, messages système, chargements | Cadre moderne | Style minimal (`g_winstyle`), boîte de description #44 | M | moyen |
 | Défis facultatifs, quêtes annexes, encyclopédie, personnalisation | — | — | L | P3 : après stabilisation, étude d'équilibrage d'abord |
 
-### Décisions attendues de Romuald
+### Décisions attendues de recompsmith
 - PR #33 et menus en français : décidé le 28/10 au soir (reprendre, traduire).
 - Retirer le code des anciennes dispositions (déjà invisibles) ou le laisser ?
 - `ROADMAP.md` : le réécrire pour ce fork (sans multijoueur) ou le garder tel
