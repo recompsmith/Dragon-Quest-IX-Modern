@@ -5847,7 +5847,7 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
         int lg = g_fw_language >= 1 && g_fw_language <= 5 ? g_fw_language - 1 : 0;
         KeybarEntry k[5]; memset(k, 0, sizeof k);
         for (int i = 0; i < 5; i++) { if (!action_sign(act[i], 0, &k[i].style, &k[i].face, k[i].key, sizeof k[i].key)) k[i].key[0] = 0; k[i].what = what[i][lg]; }
-        const float U = C * 1152.0f / 1080.0f;                    /* (keybar.c's units: a 1920 x 1080 screen's pixels) */
+        const float U = C * 1152.0f / 1080.0f * 1.45f;            /* (keybar.c's units: a 1920 x 1080 screen's pixels; larger here: the bar may run under both columns) */
         float s = fminf(g_lay_s > 0 ? g_lay_s : 5.625f, 11.25f);
         int pw, ph, ch; static float wu, hu; static int shown;
         if (ww > 1 && wh > 1) {                                   /* (a layout for the mouse alone (1 x 1): the picture kept, its place as before) */
