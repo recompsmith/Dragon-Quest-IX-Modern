@@ -5864,6 +5864,8 @@ static void skill_update(int a_on_top) {
 static void skill_pieces(GlPresent* v, int ww, int wh) {
     /* in the mockup's units (maquette-repartition-points-v7: 1932 x 1152), as Equip's: the game's letters as big as its list's */
     const uint32_t a = g_sk_at, *bp = g_engine_out[0];
+    const uint8_t* hm = g_hdtext_on ? g_hdtext_mask[0] : NULL;   /* (the HD text on: the letters not in the screen's picture, in its mask) */
+#define SK_INK(i) ((bp[i] & 0xFFFFFF) == 0xFBFBFB || (hm && hm[i]))
     const float C = fminf(v->ch / 1152.0f, v->cw / 1932.0f), mid = v->cw / 2, oy = (v->ch - 1152 * C) / 2, KL = 4.04f * C, t = 0.75f;
 #define SX(m) (mid + ((m) - 966) * C)
 #define SY(m) (oy + (m) * C)
@@ -5872,7 +5874,7 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
     /* the title, who (their job's plaque, their name and level) */
     modern_window(v, SX(50), SY(36), 1832 * C, 104 * C);
     int tx0 = 246, tx1 = 9;
-    for (int y = 3; y < 15; y++) for (int x = 10; x < 246; x++) if ((bp[y * 256 + x] & 0xFFFFFF) == 0xFBFBFB) { if (x < tx0) tx0 = x; if (x > tx1) tx1 = x; }
+    for (int y = 3; y < 15; y++) for (int x = 10; x < 246; x++) if (SK_INK(y * 256 + x)) { if (x < tx0) tx0 = x; if (x > tx1) tx1 = x; }
     if (tx1 > tx0) bestiary_piece(v, 3, tx0 - 1, 3, tx1 - tx0 + 3, 12, 30, SX(84), SY(88) - 6 * KL, KL);
     /* who: their name, their job's sign, their level (the game's) */
     bestiary_piece(v, 3, 11, 107, 114, 12, 30, SX(1848) - 114 * KL, SY(88) - 6 * KL, KL);
@@ -5940,10 +5942,13 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
         int y0 = 126 + 13 * j, span[2][2] = { { 12, 59 }, { 60, 113 } };
         for (int q = 0; q < 2; q++) {
             int lo = span[q][1] + 1, hi = span[q][0] - 1;
-            for (int y = y0; y < y0 + 12; y++) for (int x = span[q][0]; x <= span[q][1]; x++) if ((bp[y * 256 + x] & 0xFFFFFF) == 0xFBFBFB) { if (x < lo) lo = x; if (x > hi) hi = x; }
+            for (int y = y0; y < y0 + 12; y++) for (int x = span[q][0]; x <= span[q][1]; x++) if (SK_INK(y * 256 + x)) { if (x < lo) lo = x; if (x > hi) hi = x; }
             if (hi < lo) continue;
             float k = q ? KL * 0.9f : KL * 0.8f, w = (float)(hi - lo + 3);
-            bestiary_piece(v, 3, lo - 1, y0, (int)w, 12, 30, SX(cx) - w * k / 2, SY(q ? 878 : 850), k);
+            float px_ = hm ? (q ? SX(cx + 88) - w * k : SX(cx - 88)) : SX(cx) - w * k / 2;   /* (the HD letters' boxes wider than their ink: the name at the column's left, its number at its right) */
+            if (hm && q) { lo = span[q][0]; w = (float)(span[q][1] - lo + 1); px_ = SX(cx + 88) - w * k; }
+            if (hm && !q) { lo = span[q][0]; w = (float)(span[q][1] - lo + 1); }
+            bestiary_piece(v, 3, lo - 1, y0, (int)w, 12, 30, px_, SY(q ? 878 : 850), k);
         }
     }
     /* the skill's table (the top screen) at the right, as big as its window */
@@ -5977,6 +5982,7 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
 #undef SX
 #undef SY
     v->round[2] = 0;                                              /* (the minimap: not the skill's table in it) */
+#undef SK_INK
 }
 
 static void xmenu_pieces(GlPresent* v) {
