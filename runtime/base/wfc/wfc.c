@@ -95,7 +95,9 @@ void wfc_enable(int on, const char* dir) {
 
 int wfc_enabled(void) { return g_on; }
 
-void wfc_frame(void) {}
+void wfc_frame(void) {
+    if (g_on && g_frame && g_frame % 8 == 0) wfc_nossl();   /* first pass at frame 8 */
+}
 
 void wfc_poll(void) {
     if (!g_out.n) return;
