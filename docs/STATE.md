@@ -1,6 +1,6 @@
 # Where the project stands
 
-> **This fork (romusan495/DQIX-EnhancedEU)** makes its own weekly releases,
+> **This fork (recompsmith/DQIX-EnhancedEU)** makes its own weekly releases,
 > v31.1, v31.2... (procedure: `docs/roles/integration.md`): tag `v31.N`,
 > branch `stable` moved to it, notes in `release-notes/`. Help > Check for
 > updates reads this repository (`runtime/update.h`). The names below the

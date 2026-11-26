@@ -11,7 +11,7 @@ Lite, restyle visuel des fenêtres et des boîtes de dialogue, maquettes.
   `tools/movie_frames.py`, `runtime/hdmovie.c` / `.h`, `skins/`.
 - Hors git, dans le dossier de jeu : `game\textures`, `game\movies`,
   `game\textures-hd-outil`. Ils ne sont jamais versionnés ; sauvegarde dans
-  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de Romuald.
+  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de recompsmith.
 
 ## Partagé
 Voir la liste des fichiers partagés dans `CLAUDE.md` (surtout `gl_render.c`,
@@ -19,7 +19,7 @@ Voir la liste des fichiers partagés dans `CLAUDE.md` (surtout `gl_render.c`,
 l'un après l'autre, pas en parallèle.
 
 ## À savoir
-- Textures HD : « IA seule » (Real-ESRGAN anime sans mélange), choix de Romuald
+- Textures HD : « IA seule » (Real-ESRGAN anime sans mélange), choix de recompsmith
   du 2026-10-29 qui remplace la méthode 5 (mélange à 50 % avec un agrandissement
   Lanczos, toujours possible avec `TEXHD_SHARP=50`). Pas de version HD pour les
   textures vides ou unies.
