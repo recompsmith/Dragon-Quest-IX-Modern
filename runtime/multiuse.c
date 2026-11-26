@@ -4,7 +4,7 @@
  * one more row under Use: "Use several". Chosen (with A, a touch or the
  * mouse), the game asks "To whom?" as for Use; the companion chosen, a small
  * window opens beside it, "How many?", then "Use 5 Seeds of Strength on
- * Tsumiko?" Yes / No; Yes uses them one after another, the game's own way
+ * Patty?" Yes / No; Yes uses them one after another, the game's own way
  * (its keys pressed for the player), the game's messages shown. B stops it.
  *
  * The row is the game's own: its window is written as text with tags

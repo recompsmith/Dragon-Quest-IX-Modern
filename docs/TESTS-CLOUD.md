@@ -1,12 +1,12 @@
 # Tests cloud
 
 Les tests qui construisent et lancent le jeu tournent dans le cloud, jamais sur
-le PC de Romuald : rien n'y est compilé ni lancé pour tester, et la ROM n'y est
+le PC de recompsmith : rien n'y est compilé ni lancé pour tester, et la ROM n'y est
 pas touchée.
 
 ## Pourquoi
 
-- Le PC de Romuald sert à jouer. Un build ou une partie de test y prend du temps
+- Le PC de recompsmith sert à jouer. Un build ou une partie de test y prend du temps
   et des ressources, et ne se fait qu'avec son accord.
 - Un conteneur cloud neuf est reproductible : même système, mêmes paquets, même
   ROM, à chaque fois.
@@ -14,16 +14,16 @@ pas touchée.
 
 ## Le dépôt privé
 
-Dépôt `romusan495/dqix-test-prive` (privé, il le reste). Il contient la ROM EU
+Dépôt `recompsmith/dqix-test-prive` (privé, il le reste). Il contient la ROM EU
 (version européenne) en 3 parties, recollées au démarrage, le script
 `tools/cloud-test.sh` et les captures. Rien de ce dépôt ne va dans le dépôt
 public, une release ou Discord : ni ROM, ni capture du jeu.
 
 ## Lancer une session de test
 
-1. Romuald le demande dans un message (aucune session cloud ne démarre sans lui).
+1. recompsmith le demande dans un message (aucune session cloud ne démarre sans lui).
 2. La session contrôleur ouvre, dans l'application Claude desktop, une nouvelle
-   session **Cloud** sur le dépôt `romusan495/dqix-test-prive`.
+   session **Cloud** sur le dépôt `recompsmith/dqix-test-prive`.
 3. Dans cette session :
 
 ```
@@ -75,7 +75,7 @@ privé et vérifie que le commit et le résultat correspondent.
 ## Captures avant / après
 
 Pour un changement visible, on garde des captures avant et après dans le dépôt
-privé et on les montre à Romuald avant la fusion.
+privé et on les montre à recompsmith avant la fusion.
 
 ## Ce qu'on sait (essai du 14/11/2026)
 
