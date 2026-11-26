@@ -154,7 +154,7 @@ static void layout(int lang, int width) {
             char out[1024];
             if (gap && g_nline && g_line[g_nline - 1].kind != L_VERSION) add(L_GAP, 0, "", 0);
             gap = 0;
-            int heading = 0;                                     /* "**Fixed since v47**", "**Fixed since v47** (thanks Tsu)"; not "**Label**: text" */
+            int heading = 0;                                     /* "**Fixed since v47**", "**Fixed since v47** (thanks TitanFr199)"; not "**Label**: text" */
             if (n > 4 && !strncmp(s, "**", 2)) {
                 const char* close = strstr(s + 2, "**");
                 size_t rest = close && close < s + n ? (size_t)(s + n - (close + 2)) : 0;

@@ -13,7 +13,7 @@ fork ; depuis le 19 octobre 2026 (sa v31), il ne reprend plus ses mises à jour.
 ## This fork / Ce fork (since 2026-10-19)
 
 **[recompsmith](https://github.com/recompsmith)**, with
-**TitanFr199** (Tsu, Dr.Stone), helped by Claude. Each file that is entirely
+**TitanFr199** (TitanFr199, helped by Claude. Each file that is entirely
 ours starts with a `Copyright (C) 2026 ...` line naming its authors; under the
 GPL, anyone reusing these files must keep it.
 

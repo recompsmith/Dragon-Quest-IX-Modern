@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Use several at once: the item menu's "How many?" (multiuse.c). */
 #pragma once
 #include <stdint.h>
