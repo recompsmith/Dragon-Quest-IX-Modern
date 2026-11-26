@@ -24,18 +24,18 @@ dossier de jeu, tenue du suivi central.
    `/pr-review-toolkit:review-pr` (code-reviewer, silent-failure-hunter ;
    pr-test-analyzer si `tests/` change). Les corrections reviennent au thread de dev.
 3. Sous-agent `dqix-build-check` sur la branche (ou son worktree).
-4. Fusion dans `main` **avec l'accord de Romuald** ; mise à jour de `docs/SUIVI.md`.
+4. Fusion dans `main` **avec l'accord de recompsmith** ; mise à jour de `docs/SUIVI.md`.
 5. Dossier de jeu, avec son accord : `git -C J:\DQIX-Enhanced status` (doit être
    propre), `git pull --ff-only`, BUILD.bat, puis `dqix-build-check` sur `J:\DQIX-Enhanced`.
 
 ## À savoir
 - Sauvegarde du dossier de jeu avant une mise à jour risquée : `J:\DQIX-Backups\<date>-<raison>`.
-- Les branches fusionnées ne se suppriment qu'avec l'accord de Romuald.
+- Les branches fusionnées ne se suppriment qu'avec l'accord de recompsmith.
 - Pas de CI GitHub : la vérification se fait sur ce PC.
 
-## Release hebdomadaire (décidé avec Romuald le 2026-10-22)
+## Release hebdomadaire (décidé avec recompsmith le 2026-10-22)
 Une tâche Claude planifiée par semaine ; rien n'est publié sans le feu vert de
-Romuald dans le thread `[Intégration] Releases hebdomadaires`.
+recompsmith dans le thread `[Intégration] Releases hebdomadaires`.
 1. Lister les PR fusionnées dans `main` depuis le dernier tag `v31.N`. Aucune :
    pas de release cette semaine.
 2. Branche `integ/release-v31.N` : `runtime/version.h` (`DQIX_VERSION` et la
