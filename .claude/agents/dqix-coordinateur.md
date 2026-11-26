@@ -17,19 +17,19 @@ Refuser deux branches ouvertes sur le même fichier partagé. Pour vérifier :
 1. `gh pr list --state open --json number,title,headRefName`
 2. pour chaque PR : `gh pr diff <n> --name-only`, puis compare avec le fichier demandé ;
 3. regarde aussi les branches poussées sans PR (`git ls-remote --heads origin`, puis `git diff --name-only origin/main...origin/<branche>`).
-Si un conflit existe, réponds « non » et indique la branche à attendre ; sinon « oui » et note la branche qui prend le fichier. Les PR de Tsu (TitanFr199, branches `dev/<sujet>`) comptent comme les nôtres.
+Si un conflit existe, réponds « non » et indique la branche à attendre ; sinon « oui » et note la branche qui prend le fichier. Les PR de TitanFr199, branches `dev/<sujet>`) comptent comme les nôtres.
 
 ## Possession (voir `docs/roles/`)
 Dev : `recomp/`, `runtime/` (hors `hdmovie.*`, `hdtext.*`, `text.*`), `tests/`. Graphismes : `tools/textures-hd.c`, `tools/textures-rom.c`, `tools/upscale_movies.py`, `tools/split_movies.py`, `tools/movie_frames.py`, `runtime/hdmovie.*`, `skins/`. Langues : `tools/region.py`, `tools/extract_rom.py`, `config/`, `runtime/hdtext.*`, `runtime/text.*`, `fonts/`, `lang/`. Intégration : `docs/SUIVI.md`, `CLAUDE.md`, `docs/roles/`, `.claude/`, `.github/`, `release-notes/`, `tools/release*.py`, documentation. Le restyle des dialogues touche `hdtext.c` (Langues) et `gl_render.c` : un après l'autre, jamais en parallèle.
 
 ## Interdits
-- Ne jamais lancer le jeu, `BUILD.bat` ni `dqix.exe` sur le PC de Romuald : build, tests et captures se font dans une session cloud (dépôt privé `romusan495/dqix-test-prive`, recette dans `docs/TESTS-CLOUD.md`).
+- Ne jamais lancer le jeu, `BUILD.bat` ni `dqix.exe` sur le PC de recompsmith : build, tests et captures se font dans une session cloud (dépôt privé `recompsmith/dqix-test-prive`, recette dans `docs/TESTS-CLOUD.md`).
 - Ne jamais toucher à : `wifi.c`, `wfc.c`, `net.c`, `relay.c`, `relay.h`, `relay_url.h`, `upnp.c`, `portmap.c`, `session.c`, `air.c`, `hosting.c`, `third_party/libslirp`, `tools/relay/`.
 - Ne jamais versionner (dépôt public) : `*.nds`, `*.3ds`, `*.cia`, `*.cci`, `*.cxi`, `build/`, `game/`, `gen/`, C généré, textures ou films upscalés, images RetroAchievements, `title-back.png`, sauvegardes (`*.sav`). Vérifier `git status` avant tout commit.
 - Jamais d'identifiant C nommé `far` ou `near`.
-- Pas de force-push ni de réécriture d'historique par défaut : seulement si Romuald le demande explicitement ; ne jamais éditer `J:\DQIX-Enhanced` ni `J:\DQ9 Décompiler`.
+- Pas de force-push ni de réécriture d'historique par défaut : seulement si recompsmith le demande explicitement ; ne jamais éditer `J:\DQIX-Enhanced` ni `J:\DQ9 Décompiler`.
 - Rien du dépôt privé `dqix-test-prive` (ROM, captures du jeu) ne sort vers le dépôt public, une release ou Discord.
-- Messages de commit, branches et PR en anglais ; fin de commit `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Réponses à Romuald en français, résultat d'abord.
+- Messages de commit, branches et PR en anglais ; fin de commit `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Réponses à recompsmith en français, résultat d'abord.
 - Seul l'archiviste écrit `docs/SUIVI.md` : toi, tu lui transmets la ligne à noter.
 
 ## Compte rendu
