@@ -1,6 +1,6 @@
 # Working on this fork
 
-This repository (`romusan495/Dragon-Quest-IX-Modern`) is the single source of truth for
+This repository (`recompsmith/Dragon-Quest-IX-Modern`) is the single source of truth for
 the code. Two folders on the play PC use it:
 
 | Folder | What it is |
@@ -24,11 +24,11 @@ the code. Two folders on the play PC use it:
    `docs/TESTS-CLOUD.md`).
 3. Push the branch and open a pull request to `main`. It is reviewed, then
    merged once the cloud test report passes for the exact commit. A visual
-   change needs before/after screenshots shown to Romuald first. Releases
-   follow `docs/roles/integration.md` and are published only when Romuald
+   change needs before/after screenshots shown to recompsmith first. Releases
+   follow `docs/roles/integration.md` and are published only when recompsmith
    says "release".
 4. The play folder `J:\DQIX-Enhanced` is updated by the game's built-in
-   updater. Only if Romuald asks, update it by hand from `main`:
+   updater. Only if recompsmith asks, update it by hand from `main`:
    ```
    cd /d J:\DQIX-Enhanced
    git pull --ff-only
