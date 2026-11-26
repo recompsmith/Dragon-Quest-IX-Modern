@@ -1,4 +1,4 @@
-# DQIX Enhanced (fork romusan495/Dragon-Quest-IX-Modern)
+# DQIX Enhanced (fork recompsmith/Dragon-Quest-IX-Modern)
 
 Dragon Quest IX (DS) recompilé en C et exécuté nativement sur PC. Code :
 `recomp/` (recompilateur Python), `runtime/` (C : CPU, GPU 2D/3D, son, Wi-Fi,
@@ -9,13 +9,13 @@ Tâches en cours et décisions : **`docs/SUIVI.md`** (à lire en début de sessi
 Réponds en français. Messages de commit, noms de branches et PR en anglais.
 
 ## Où vit quoi
-- Dépôt GitHub `romusan495/Dragon-Quest-IX-Modern`, branche `main` = seule source du code.
+- Dépôt GitHub `recompsmith/Dragon-Quest-IX-Modern`, branche `main` = seule source du code.
 - `J:\DQIX-Enhanced-repo` = clone de dev, reste sur `main` (rôle Intégration).
 - `J:\DQIX-wt\<role>-<sujet>` = un worktree par thread de dev (voir plus bas).
-- `J:\DQIX-Enhanced` = dossier où Romuald joue (checkout de `main`).
+- `J:\DQIX-Enhanced` = dossier où recompsmith joue (checkout de `main`).
   **Ne jamais l'éditer** : il se met à jour par la mise à jour intégrée du jeu ;
   sinon seulement `git pull --ff-only` puis BUILD.bat, par le rôle Intégration,
-  avec l'accord de Romuald. Sauvegardes : `J:\DQIX-Backups\`.
+  avec l'accord de recompsmith. Sauvegardes : `J:\DQIX-Backups\`.
 
 ## Compiler (vérifié sur ce PC)
 ```
@@ -28,12 +28,12 @@ chaque nouveau worktree). Sans ROM trouvable, BUILD.bat ouvre une boîte de
 dialogue et reste bloqué : vérifier `rom\` avant un build en arrière-plan.
 En PowerShell, lancer BUILD.bat en arrière-plan.
 Ce build ne sert qu'à mettre à jour le dossier de jeu, avec l'accord de
-Romuald (`dqix-build-check`) : les tests, eux, sont cloud (section suivante).
+recompsmith (`dqix-build-check`) : les tests, eux, sont cloud (section suivante).
 
 ## Tester
-- **Rien ne se lance sur le PC de Romuald** (ni le jeu, ni BUILD.bat pour un
+- **Rien ne se lance sur le PC de recompsmith** (ni le jeu, ni BUILD.bat pour un
   test) : build, jeu sous xvfb, captures et `tests/semantics` tournent dans une
-  session cloud à partir du dépôt privé `romusan495/dqix-test-prive`.
+  session cloud à partir du dépôt privé `recompsmith/dqix-test-prive`.
   Recette et format du rapport : **`docs/TESTS-CLOUD.md`**. Sous-agent : `dqix-testeur`.
 - Le rapport cloud est la branche `tests/<sujet>` du dépôt privé ; ses deux
   premières lignes : `commit: <sha40>` puis `result: PASS|FAIL`. Il ne vaut que
@@ -51,20 +51,20 @@ Romuald (`dqix-build-check`) : les tests, eux, sont cloud (section suivante).
   (`orga/` = organisation du projet, tenue par le rôle Intégration.)
 - Ne jamais commiter : `*.nds`, `build/`, `game/`, sauvegardes, dumps, textures
   ou films upscalés, C généré (dérivé du jeu). Vérifier `git status` avant.
-- **Autonomie** (décidé par Romuald le 2026-11-14) : Claude crée branches et
+- **Autonomie** (décidé par recompsmith le 2026-11-14) : Claude crée branches et
   worktrees, commite, pousse nos branches, ouvre les PR, fusionne dans `main`
-  (nos PR et celles de Tsu) après revue et test cloud PASS, avance `stable` en
+  (nos PR et celles de TitanFr199) après revue et test cloud PASS, avance `stable` en
   avance rapide, pose les tags, publie les releases et poste l'annonce. Seule
   validation gardée : les **captures avant/après** de tout changement visuel,
-  montrées à Romuald avant la fusion. Après la fusion d'une PR de Tsu, le
+  montrées à recompsmith avant la fusion. Après la fusion d'une PR de TitanFr199, le
   prévenir en une ligne.
-- **À demander à Romuald avant** : force-push (jamais par défaut, seulement
+- **À demander à recompsmith avant** : force-push (jamais par défaut, seulement
   s'il le demande explicitement), réécriture d'historique, suppression de
   branches distantes (déjà validées le 14/11 : les branches fusionnées et
   `integ/suivi-2026-10-22`), suppression ou
   modification d'un tag ou d'une release publiés (sauf la pré-version de test
   `vX-rcN`), changement de visibilité d'un dépôt, boîtes de combat au-delà du
-  style Moderne, tout ce qui contredit un « DÉCIDÉ (Romuald) ».
+  style Moderne, tout ce qui contredit un « DÉCIDÉ (recompsmith) ».
 - Avant de modifier un fichier possédé par un autre rôle (`docs/roles/`), le
   demander au coordinateur. **Fichiers partagés** (`runtime/gl_render.c`,
   `runtime/menu_win32.c`, `runtime/frontend_sdl.c`, `runtime/gpu3d.c`,
@@ -82,8 +82,8 @@ Romuald (`dqix-build-check`) : les tests, eux, sont cloud (section suivante).
 - Ne pas recréer d'agent qu'un plugin fournit déjà.
 
 ## Plugins graphify / ponytail / agent skills
-**Priorité** : règles du projet (ce fichier, `docs/roles/`, « DÉCIDÉ (Romuald) ») > Superpowers > ponytail > agent skills.
-Aucun plugin ne lève un interdit (réseau, ROM, PC de Romuald, captures avant/après).
+**Priorité** : règles du projet (ce fichier, `docs/roles/`, « DÉCIDÉ (recompsmith) ») > Superpowers > ponytail > agent skills.
+Aucun plugin ne lève un interdit (réseau, ROM, PC de recompsmith, captures avant/après).
 
 **graphify (carte du code)**
 - Le graphe vit dans `J:\DQIX-Enhanced-repo\graphify-out\` (jamais commité, dans `.gitignore`).
@@ -142,12 +142,12 @@ doublonnent pas Superpowers ou pr-review-toolkit :
 - `dqix-langues` : traductions, polices, notes de version fr/de/it/es ; tout texte affiché.
 - `dqix-testeur` : valide une branche en session cloud (build, xvfb, captures, `tests/semantics`).
 - `dqix-relecteur` : relit le diff d'une PR prête, avant fusion.
-- `dqix-release-manager` : prépare et publie une release avec `tools/release.py`, seulement quand Romuald dit « release ».
+- `dqix-release-manager` : prépare et publie une release avec `tools/release.py`, seulement quand recompsmith dit « release ».
 - `dqix-archiviste` : met à jour `docs/SUIVI.md` et `CLAUDE.md` en fin de session ou après une fusion.
-- `dqix-veille` : veille quotidienne (sackchief, PR de Tsu) ; signale seulement.
+- `dqix-veille` : veille quotidienne (sackchief, PR de TitanFr199) ; signale seulement.
 - `dqix-build-check` : compile un dossier avec BUILD.bat, surtout le dossier de jeu après mise à jour.
 
-## Release (seulement quand Romuald dit « release » ; détail : `docs/roles/integration.md`)
+## Release (seulement quand recompsmith dit « release » ; détail : `docs/roles/integration.md`)
 0. Créer d'abord le worktree (le clone principal reste sur `main`) : `git -C J:\DQIX-Enhanced-repo worktree add J:\DQIX-wt\integ-release-vX origin/main`, puis tout lancer dedans.
 1. `python tools/release.py prepare vX` : branche `integ/release-vX`, `version.h`, liste des PR.
 2. Notes `release-notes/vX.md` (+ fr/de/it/es), test cloud PASS sur le commit exact.
