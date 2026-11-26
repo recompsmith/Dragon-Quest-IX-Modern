@@ -1,11 +1,11 @@
-/* Copyright (C) 2026 TitanFr199 (Tsu), recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 TitanFr199, recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Use several at once (multiuse.h). On an everyday item the party has more
  * than one of (a fixed heal: Medicinal herb and the Strong, Special and
  * Superior medicines; Magic water, the Sage's and Elfin elixirs; or a seed), the item's "What do you want to do?" has
  * one more row under Use: "Use several". Chosen (with A, a touch or the
  * mouse), the game asks "To whom?" as for Use; the companion chosen, a small
  * window opens beside it, "How many?", then "Use 5 Seeds of Strength on
- * Tsumiko?" Yes / No; Yes uses one the game's own way (its keys pressed for
+ * Patty?" Yes / No; Yes uses one the game's own way (its keys pressed for
  * the player). Its effect is then the game's own, once for each one chosen
  * (a seed's gain, HP or MP healed: those functions hooked), added up in the
  * one message ("Strength goes up by 100", "recovers 120 HP"), the others

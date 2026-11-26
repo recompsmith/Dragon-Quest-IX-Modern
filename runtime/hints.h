@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 recompsmith, TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith, TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later */
 /* A button's sign as the player's own controller or keyboard shows it
  * (hints.c): drawn over the game's DS buttons ("X Menu" in the field). */
 #pragma once

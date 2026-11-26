@@ -1,7 +1,7 @@
 /* The party's HP and MP, modern: on foot, a small panel at the bottom left,
  * each one's name with two bars (HP green, MP blue); the menu open, the same
  * panel larger: the name, the level, HP and MP as bars and numbers. A
- * companion knocked out: the name red. (Tsu's mockup "carte ronde v2", 31/10:
+ * companion knocked out: the name red. (TitanFr199's mockup "carte ronde v2", 31/10:
  * drawn in its pixels, 4 per DS pixel; the caller scales it.)
  *
  * From main RAM (journal_party.c): the names in the order the menus show

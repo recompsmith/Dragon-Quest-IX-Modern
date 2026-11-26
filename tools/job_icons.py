@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 recompsmith, TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith, TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later
 """Modern job icons: the game's 13 job badges (the grey 12x12 pictures next to
 each party member in battles) redrawn at 8x, smoothed and in colour, one
 colour per job. They are written as an HD sprite pack (textures/<name>.png,

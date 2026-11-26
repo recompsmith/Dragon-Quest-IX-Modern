@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later
 """Redraws a job's plate (tools/job_icons_plate/<job>.png, 96x96) and coat of
 arms (tools/job_crests/<job>.png, 400x500) from its symbol here (<job>.svg):
 the symbol in polished silver on the dark plate, in gold on the shield. The
