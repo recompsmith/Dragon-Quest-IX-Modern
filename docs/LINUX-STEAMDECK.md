@@ -26,7 +26,7 @@ Python 3 et SDL2, que SteamOS et la plupart des distributions ont déjà.
    télécharge les outils puis compile le jeu, ce qui prend 10 à 20 minutes.
 4. **Sans RecompLauncher** :
    1. Téléchargez `Dragon-Quest-IX-Modern-…-Linux-x64.zip` sur la
-      [page des versions](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases)
+      [page des versions](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases)
       et décompressez-le.
    2. Faites un clic droit dans le dossier, puis **Ouvrir un terminal ici**
       (Konsole).
@@ -104,7 +104,7 @@ ROM to the Deck. Then either:
   **Dragon Quest IX Modern**, Install, and choose your ROM. The first time it
   downloads the tools and builds the game, which takes 10-20 minutes.
 - **Without it**: unzip `Dragon-Quest-IX-Modern-…-Linux-x64.zip` from the
-  [releases page](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases),
+  [releases page](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases),
   right-click in its folder > Open Terminal Here, run
   `sh BUILD.sh ~/Downloads/your-rom.nds`, then play with `game/play.sh`.
 

@@ -18,7 +18,7 @@ Ce n'est pas un émulateur : le code ARM du jeu est **recompilé en C**, puis li
 à un runtime qui recrée le matériel de la DS (2D, 3D, son, cartouche, entrées)
 avec SDL2 et OpenGL.
 
-Projet développé par **Romuald** ([romusan495](https://github.com/romusan495))
+Projet développé par **recompsmith** ([recompsmith](https://github.com/recompsmith))
 et **TitanFr199**, avec l'aide de Claude.
 
 > **Droits et usage — à lire.** Ce projet est réalisé **à des fins éducatives uniquement** (étude de la recompilation et de la préservation des jeux). Dragon Quest IX et tout son contenu appartiennent à leurs ayants droit (Square Enix, Level-5, Armor Project, Bird Studio, Koichi Sugiyama, Nintendo). **Aucune ROM n'est fournie et aucune ne le sera.** Pour que le projet fonctionne, vous devez utiliser **une ROM extraite de votre propre cartouche** de Dragon Quest IX, que vous possédez légalement. Ne téléchargez pas de ROM et ne partagez ni ROM, ni jeu compilé, ni fichiers du jeu.
@@ -123,7 +123,7 @@ ou américaine), Windows 10 ou 11 (64 bits), environ 3 Go libres, et Internet la
 première fois.
 
 1. Téléchargez la dernière version sur la
-   **[page des versions](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases)**
+   **[page des versions](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases)**
    (*Source code (zip)*) et décompressez-la.
 2. Double-cliquez sur **`Install Dragon Quest IX.bat`**, choisissez votre ROM
    (la fenêtre indique sa version), le dossier du jeu et les raccourcis.
@@ -184,8 +184,8 @@ version) into a native Windows program, built on your PC from the ROM you
 dumped from your cartridge. **This repository contains no game data**: no
 code, graphics, music or ROM. It isn't an emulator: the game's ARM code is
 **recompiled into C** and linked to a runtime that rebuilds the DS hardware
-with SDL2 and OpenGL. Developed by **Romuald**
-([romusan495](https://github.com/romusan495)) and **TitanFr199**, helped by
+with SDL2 and OpenGL. Developed by **recompsmith**
+([recompsmith](https://github.com/recompsmith)) and **TitanFr199**, helped by
 Claude.
 
 > **Rights and use, please read.** This project is for **educational purposes only** (studying recompilation and game preservation). Dragon Quest IX and all its content belong to their rights holders (Square Enix, Level-5, Armor Project, Bird Studio, Koichi Sugiyama, Nintendo). **No ROM is provided, and none ever will be.** To make it work, you must use **a ROM dumped from your own cartridge** of Dragon Quest IX, which you legally own. Don't download ROMs, and don't share ROMs, the built game or any game files.
@@ -217,7 +217,7 @@ Claude.
   test on both EU and USA before each merge.
 
 **Install**: download the latest
-**[release](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases)**
+**[release](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases)**
 (*Source code (zip)*), unzip it, double-click `Install Dragon Quest IX.bat` and
 choose your own ROM (Windows 10/11 64-bit, about 3 GB free). Or put your ROM in
 `rom` and run `BUILD.bat`. The game then updates itself and keeps your saves.
@@ -229,7 +229,7 @@ terminal. Step by step: **[docs/LINUX-STEAMDECK.md](docs/LINUX-STEAMDECK.md)**.
 
 ## Crédits / Credits
 
-- Projet / project : **Romuald** ([romusan495](https://github.com/romusan495))
+- Projet / project : **recompsmith** ([recompsmith](https://github.com/recompsmith))
   et / and **TitanFr199** ([TitanFr199](https://github.com/TitanFr199)), avec
   l'aide de / helped by Claude.
 - Noms et limites des fonctions : projet de décompilation de Dragon Quest IX
