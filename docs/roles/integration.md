@@ -25,30 +25,30 @@ central.
    `/pr-review-toolkit:review-pr` (code-reviewer, silent-failure-hunter ;
    pr-test-analyzer si `tests/` change). Les corrections reviennent au thread de dev.
 3. Test cloud de la branche (`dqix-testeur`, `docs/TESTS-CLOUD.md`) : rapport
-   PASS pour le commit exact. Rien ne se lance sur le PC de Romuald.
-4. Changement visuel : captures avant/après montrées à Romuald avant la fusion
+   PASS pour le commit exact. Rien ne se lance sur le PC de recompsmith.
+4. Changement visuel : captures avant/après montrées à recompsmith avant la fusion
    (seule validation gardée).
-5. Fusion dans `main` (autonome : nos PR et celles de Tsu, règles de
-   `CLAUDE.md`) ; une ligne à Romuald après la fusion d'une PR de Tsu ; mise à
+5. Fusion dans `main` (autonome : nos PR et celles de TitanFr199, règles de
+   `CLAUDE.md`) ; une ligne à recompsmith après la fusion d'une PR de TitanFr199 ; mise à
    jour de `docs/SUIVI.md`.
 6. Dossier de jeu : mis à jour par la mise à jour intégrée du jeu, on n'y touche
-   pas. Si besoin, avec l'accord de Romuald : `git -C J:\DQIX-Enhanced status`
+   pas. Si besoin, avec l'accord de recompsmith : `git -C J:\DQIX-Enhanced status`
    (doit être propre), `git pull --ff-only`, BUILD.bat, puis `dqix-build-check`
    sur `J:\DQIX-Enhanced`.
 
 ## À savoir
 - Sauvegarde du dossier de jeu avant une mise à jour risquée : `J:\DQIX-Backups\<date>-<raison>`.
-- La suppression de branches distantes se demande à Romuald (déjà validées le
+- La suppression de branches distantes se demande à recompsmith (déjà validées le
   14/11 : les branches fusionnées et `integ/suivi-2026-10-22`).
-- Vérification : tests cloud (`docs/TESTS-CLOUD.md`), jamais le jeu sur le PC de Romuald.
+- Vérification : tests cloud (`docs/TESTS-CLOUD.md`), jamais le jeu sur le PC de recompsmith.
 
 ## Release (sur demande, autonome depuis le 2026-11-14)
-Publication **seulement quand Romuald dit « release »** (plus de release
+Publication **seulement quand recompsmith dit « release »** (plus de release
 hebdomadaire automatique). Tout passe par `tools/release.py` (agent
 `dqix-release-manager`) ; `--dry-run` affiche chaque commande git/gh au lieu de
 l'exécuter.
 
-Numérotation (Romuald, 2026-10-30) : versions entières à partir de v32 ; les
+Numérotation (recompsmith, 2026-10-30) : versions entières à partir de v32 ; les
 v31.1 à v31.11 l'ont précédée. Depuis le 2026-11-13 : après v47 vient **v2.0** ;
 corrections = v2.1, v2.2... ; gros ajouts = v3, v4... `update.c` range un
 majeur < 26 après v47. Les jeux en v47 ou avant lisent la première ligne
@@ -74,7 +74,7 @@ devient la release suivante.
    `<!-- in-game notes end here -->`) ; une langue sans fichier montre l'anglais.
    Commit et push de la branche.
 3. Test cloud sur le commit exact de la branche (`dqix-testeur`). Rapport :
-   branche `tests/release-vX` de `romusan495/dqix-test-prive`
+   branche `tests/release-vX` de `recompsmith/dqix-test-prive`
    (`captures/release-vX/report.md`), première ligne `commit: <sha40>`, seconde
    `result: PASS|FAIL`. Rien du dépôt privé ne sort vers le dépôt public.
 4. **Pré-version d'essai** (recommandée) :
@@ -107,14 +107,14 @@ devient la release suivante.
    (< 2000 caractères) écrite par l'agent dans `J:\DQIX-Passation\annonces\vX.txt`
    (jamais dans git). Si `DISCORD_WEBHOOK_URL` existe, le script la poste ;
    sinon le fichier reste là et le script le dit. Ne jamais demander l'URL à
-   Romuald. Texte trop long ou webhook en erreur : erreur visible, fichier conservé.
+   recompsmith. Texte trop long ou webhook en erreur : erreur visible, fichier conservé.
 
 **Reprise après un arrêt** (relancer `publish vX` ne reprend pas : la PR est
 déjà fusionnée, `gh pr create` échoue) :
 - Arrêt après la fusion, avant `stable` : vérifier `git diff --quiet <sha testé>
   origin/main`, puis `git push origin origin/main:stable` à la main (sans
   `--force`), puis `gh release create vX --target stable --title "vX : ..."
-  --notes-file release-notes/vX.md --latest --repo romusan495/Dragon-Quest-IX-Modern`.
+  --notes-file release-notes/vX.md --latest --repo recompsmith/Dragon-Quest-IX-Modern`.
 - Arrêt après le push de `stable`, avant la release : lancer seulement ce
   `gh release create`.
 - `verify` en échec ou en délai : la release reste publiée, corriger puis
@@ -122,4 +122,4 @@ déjà fusionnée, `gh pr create` échoue) :
 
 - **Jamais dans une release** : ROM, `dqix.exe`, C généré, `build/`, `game/`,
   textures ou films upscalés, `wfc/` et les extras (données du jeu).
-- Aucune étape n'attend un clic de Romuald.
+- Aucune étape n'attend un clic de recompsmith.
