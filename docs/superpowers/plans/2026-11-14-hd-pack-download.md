@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Every player gets Romuald's HD pack (FatalPixels textures + 6 SeedVR2 movies), downloaded by the game in the background, with no stutter.
+**Goal:** Every player gets recompsmith's HD pack (FatalPixels textures + 6 SeedVR2 movies), downloaded by the game in the background, with no stutter.
 
-**Architecture:** On Romuald's PC, dev tools extract the movies from the ROM, remake them with SeedVR2, and bundle textures + movies into stored zips plus a manifest, attached to a GitHub release `hd-pack-1`. At the player's, the game starts a separate low-priority program `hd-pack.exe` (like `textures-hd.exe` today): it downloads, checks, installs into `textures/hd-pack/` and `movies/`, sets the Real-ESRGAN textures aside in `hd-pack-ancien/` (it never deletes a folder), and writes `hd-pack-progress.txt`, which the game's existing bottom-left bar reads. The game process itself only spawns, reads a small text file twice a second, and reloads at the end, so it never stutters.
+**Architecture:** On recompsmith's PC, dev tools extract the movies from the ROM, remake them with SeedVR2, and bundle textures + movies into stored zips plus a manifest, attached to a GitHub release `hd-pack-1`. At the player's, the game starts a separate low-priority program `hd-pack.exe` (like `textures-hd.exe` today): it downloads, checks, installs into `textures/hd-pack/` and `movies/`, sets the Real-ESRGAN textures aside in `hd-pack-ancien/` (it never deletes a folder), and writes `hd-pack-progress.txt`, which the game's existing bottom-left bar reads. The game process itself only spawns, reads a small text file twice a second, and reloads at the end, so it never stutters.
 
 **Tech Stack:** C (MSYS2 UCRT64 gcc, WinHTTP, BCrypt SHA-256), Python 3 (numpy, Pillow, ffmpeg) for dev tools, the local SeedVR2 service (`claude-service\upscale-video.bat`).
 
@@ -14,8 +14,8 @@
 
 - Never commit textures, movies, ROM data or packs (CLAUDE.md): they only go to the GitHub release.
 - The game must never stutter: no download, hashing, unzip or file move inside `dqix.exe`.
-- Manifest URL: `https://github.com/romusan495/Dragon-Quest-IX-Modern/releases/download/hd-pack-1/hd-pack.txt`.
-- Release `hd-pack-1` is published once, after all 6 movies are done; publishing it needs Romuald's explicit go-ahead.
+- Manifest URL: `https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases/download/hd-pack-1/hd-pack.txt`.
+- Release `hd-pack-1` is published once, after all 6 movies are done; publishing it needs recompsmith's explicit go-ahead.
 - Every zip attached to the release is under 2 GB (use 1.9 GB as the cut).
 - Pack folders: textures go to `game/textures/hd-pack/`, movies to `game/movies/` (existing movies copied to `game/movies-avant-hd-pack/` first).
 - Texture priority: personal folders under `textures/` > `textures/hd-pack/` > `textures/hd/`.
@@ -25,10 +25,10 @@
   - The only `DeleteFileW` calls are on files the program itself wrote, named exactly (the zips from the manifest, the progress file, the lock). The only `RemoveDirectoryW` calls are on folders it created, emptied first, from the deepest up (`RemoveDirectoryW` fails on a non-empty folder: that failure is logged and left alone).
   - Before any move or delete, the path is resolved with `GetFullPathNameW`, must lie strictly under the game folder, contain no `..`, and neither it nor any parent up to the game folder may carry `FILE_ATTRIBUTE_REPARSE_POINT` (junction, symlink, mount point). Any doubt: skip, log, go on.
   - Wide-char (`W`) Windows APIs only, so a non-ASCII game path can't be misread.
-- Tests of any code that moves, overwrites or deletes files never run on Romuald's PC, not even in a temp folder: they run in a Claude Code cloud session (Linux, `x86_64-w64-mingw32-gcc` + Wine). No test ever creates a junction or symlink pointing outside its own temp folder, and no test disables a safety check ("mutation test") outside the cloud.
+- Tests of any code that moves, overwrites or deletes files never run on recompsmith's PC, not even in a temp folder: they run in a Claude Code cloud session (Linux, `x86_64-w64-mingw32-gcc` + Wine). No test ever creates a junction or symlink pointing outside its own temp folder, and no test disables a safety check ("mutation test") outside the cloud.
 - Setting `hd_pack_download = 1` in `settings.ini` (0 = never), menu item in Graphics.
 - Credits in README and release notes: FatalPixels (twittman, CC-BY-NC-SA-4.0), UltraSharp (Kim2091), SeedVR2 (ByteDance); non-commercial use only.
-- GPU jobs on Romuald's PC go through `claude-service\guard.bat` (16 GB RAM, 13 GB VRAM, one GPU job at a time). Never launch the game on his PC: he checks in game himself.
+- GPU jobs on recompsmith's PC go through `claude-service\guard.bat` (16 GB RAM, 13 GB VRAM, one GPU job at a time). Never launch the game on his PC: he checks in game himself.
 - Shared files touched (`runtime/gl_render.c`, `runtime/frontend_sdl.c`, `runtime/menu_win32.c`, `tools/build-game.sh`): tell the coordinator the branch `graph/hd-pack-download` touches them.
 - Commit messages in English, ending with the `Co-Authored-By` line.
 
@@ -73,7 +73,7 @@
 - [ ] **Step 3: Implement** `write_movie`, switch `upscale_movies.py` to it, write `seedvr2_movies.py`.
 - [ ] **Step 4: Run** the test: passes. Then a real short run: `python tools/seedvr2_movies.py <mods> <work> <out> --max-frames 42 xenlon_OP_A` (2 SeedVR2 passes through the guard): `.sig` count 42, `.mpg` 1024×768.
 - [ ] **Step 5: Commit** `tools: remake the HD movies with SeedVR2`.
-- [ ] **Step 6: Full run in the background** (hours): all 6 movies into `J:\DQIX-HD-staging\movies`. Report the guard's peak lines. Romuald watches them in game himself (copy into his `game\movies` only with his go-ahead, old ones backed up to `J:\DQIX-Backups`).
+- [ ] **Step 6: Full run in the background** (hours): all 6 movies into `J:\DQIX-HD-staging\movies`. Report the guard's peak lines. recompsmith watches them in game himself (copy into his `game\movies` only with his go-ahead, old ones backed up to `J:\DQIX-Backups`).
 
 ### Task 3: Build the pack (zips + manifest)
 
@@ -162,11 +162,11 @@
 
 - [ ] **Step 1: Run** BUILD.bat in the worktree (subagent `dqix-build-check`): exit 0 and `game\hd-pack.exe` exists.
 - [ ] **Step 2: Commit** `HD pack: built with the game; README credits and docs`.
-- [ ] **Step 3: Ask the coordinator** to note the shared files in `docs/SUIVI.md`; push the branch and open the PR only with Romuald's go-ahead.
+- [ ] **Step 3: Ask the coordinator** to note the shared files in `docs/SUIVI.md`; push the branch and open the PR only with recompsmith's go-ahead.
 
-### Task 8: Publish the pack (after the 6 movies, with Romuald's go-ahead)
+### Task 8: Publish the pack (after the 6 movies, with recompsmith's go-ahead)
 
 - [ ] **Step 1:** `python tools/make_hd_pack.py J:\DQIX-Enhanced\game\textures\hd J:\DQIX-HD-staging\movies J:\DQIX-HD-staging\release`, check the manifest lines.
 - [ ] **Step 2:** End-to-end with `HDPACK_SOURCE=J:\DQIX-HD-staging\release` on a copy of a game folder (not the play folder): installed texture count = 12,942, movies present.
-- [ ] **Step 3:** With Romuald's explicit yes: `gh release create hd-pack-1 ... --title "HD pack 1" --notes-file <notes with credits, and that the movies were made and checked on the USA version; EU not checked yet>` uploading the zips and `hd-pack.txt`. Then a run without `HDPACK_URL` on the copy folder downloads from GitHub and installs.
-- [ ] **Step 4:** Romuald checks in game himself: the bar at the bottom left, then textures and movies in HD.
+- [ ] **Step 3:** With recompsmith's explicit yes: `gh release create hd-pack-1 ... --title "HD pack 1" --notes-file <notes with credits, and that the movies were made and checked on the USA version; EU not checked yet>` uploading the zips and `hd-pack.txt`. Then a run without `HDPACK_URL` on the copy folder downloads from GitHub and installs.
+- [ ] **Step 4:** recompsmith checks in game himself: the bar at the bottom left, then textures and movies in HD.
