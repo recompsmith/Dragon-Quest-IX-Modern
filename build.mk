@@ -14,6 +14,14 @@ OUT ?= dqix
 RT = $(wildcard runtime/*.c)
 RT := $(filter-out runtime/stub_runtime.c runtime/frontend_%.c runtime/gl_render.c runtime/menu_win32.c runtime/gamemenu.c runtime/controls.c runtime/exe_main.c,$(RT)) runtime/frontend_$(FRONTEND).c
 
+# BASE_PARTS: parts of the runtime built from runtime/base/ in place of the
+# files they replace (empty, the default: the usual build). "all" takes every one.
+#   wfc  runtime/base/wfc/*.c in place of runtime/wfc.c (the built-in Wi-Fi server)
+BASE_PARTS ?=
+ifneq ($(filter wfc all,$(BASE_PARTS)),)
+RT := $(filter-out runtime/wfc.c,$(RT)) $(wildcard runtime/base/wfc/*.c)
+endif
+
 ifeq ($(FRONTEND),sdl)
 SDL_CFLAGS ?= $(shell sdl2-config --cflags)
 SDL_LIBS ?= $(shell sdl2-config --libs)
@@ -94,6 +102,9 @@ $(OBJ)/rt/relay.o: runtime/relay.h runtime/relay_url.h
 $(OBJ)/rt/%.o: runtime/%.c runtime/nds.h runtime/cpu.h runtime/coro.h runtime/frontend.h runtime/version.h runtime/air.h runtime/session.h runtime/hdtext.h runtime/hdsprite.h runtime/uitext.h
 	@mkdir -p $(dir $@)
 	$(CC) -O2 -g -Wall -Wextra -Wno-unused-parameter $(PIC) $(DETERMINISM) $(DEFS) -Iruntime -I$(GEN) -c $< -o $@
+
+# runtime/base/wfc: its own headers too (objects in $(OBJ)/rt/base/wfc/, same rule as the runtime)
+$(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(filter runtime/base/wfc/%.c,$(RT))): $(wildcard runtime/base/wfc/*.h)
 
 clean:
 	rm -rf $(OBJ) $(OUT) $(CORE)

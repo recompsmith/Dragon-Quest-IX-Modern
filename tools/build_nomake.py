@@ -24,9 +24,13 @@ SDL_ONLY = {"gl_render", "menu_win32", "gamemenu", "controls"}
 rt = sorted(p for p in glob.glob("runtime/*.c")
             if os.path.basename(p)[:-2] not in SDL_ONLY | {"stub_runtime", "exe_main"}
             and not os.path.basename(p).startswith("frontend_"))
+# BASE_PARTS (as in build.mk): runtime/base/wfc/*.c in place of runtime/wfc.c
+BASE_PARTS = (V.get("BASE_PARTS") or os.environ.get("BASE_PARTS") or "").split()
+if {"wfc", "all"} & set(BASE_PARTS):
+    rt = [p for p in rt if p != "runtime/wfc.c"] + sorted(glob.glob("runtime/base/wfc/*.c"))
 slirp = sorted(glob.glob("third_party/libslirp/src/*.c")) + ["third_party/libslirp/glib/glib.c"]
 SLIRP_INC = ["-Ithird_party/libslirp/src", "-Ithird_party/libslirp/glib"]
-headers = max((os.path.getmtime(h) for h in glob.glob("runtime/*.h")), default=0)
+headers = max((os.path.getmtime(h) for h in glob.glob("runtime/*.h") + glob.glob("runtime/base/*/*.h")), default=0)
 
 
 def rt_flags(name):
@@ -46,7 +50,7 @@ for src in glob.glob(f"{GEN7}/*.c"):
     jobs[f"{OBJ}/gen7/{os.path.basename(src)[:-2]}.o"] = (src, [*CFLAGS, *PIC, *DEFS, "-Iruntime", f"-I{GEN7}"], 0)
 for src in rt + [f"runtime/{n}.c" for n in sorted(SDL_ONLY)] + ["runtime/frontend_sdl.c", "runtime/frontend_none.c", "runtime/exe_main.c"]:
     n = os.path.basename(src)[:-2]
-    jobs[f"{OBJ}/rt/{n}.o"] = (src, rt_flags(n), headers)
+    jobs[f"{OBJ}/rt/{src[len('runtime/'):-2]}.o"] = (src, rt_flags(n), headers)
 for src in slirp:
     jobs[f"{OBJ}/slirp/{src[len('third_party/libslirp/'):-2]}.o"] = (
         src, ["-O2", "-w", *PIC, "-DLIBSLIRP_STATIC_BUILD", "-DBUILDING_LIBSLIRP", '-DG_LOG_DOMAIN="Slirp"', *SLIRP_INC], 0)
@@ -77,7 +81,7 @@ with ThreadPoolExecutor(os.cpu_count() or 2) as ex:
 
 gen = sorted(o for o in jobs if o.startswith((f"{OBJ}/gen/", f"{OBJ}/gen7/")))
 sl = sorted(o for o in jobs if o.startswith(f"{OBJ}/slirp/"))
-rto = [f"{OBJ}/rt/{os.path.basename(s)[:-2]}.o" for s in rt]
+rto = [f"{OBJ}/rt/{s[len('runtime/'):-2]}.o" for s in rt]
 
 
 def link(out, objs, pre, post):
