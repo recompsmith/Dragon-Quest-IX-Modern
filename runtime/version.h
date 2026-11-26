@@ -9,7 +9,7 @@
  * even in a comment, and count whole numbers (v2.0 would look older than
  * v47 to them). The line below is theirs: keep "v48" first so they still see
  * a newer version, and the real one in brackets for their message.
- * #define DQIX_VERSION "v48 (v4)" */
+ * #define DQIX_VERSION "v48 (v4.1)" */
 #pragma once
-#define DQIX_VERSION "v4"
+#define DQIX_VERSION "v4.1"
 #define DQIX_VERSION_DATE "2026-11-26"
