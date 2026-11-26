@@ -4655,8 +4655,9 @@ static void wide_update(int a_on_top) {
         g_place_plate = n > 20 && x < 245 ? x + 1 : -1;
         if (g_place_plate >= 0) {                                 /* its white letters, from the first to the last */
             int a = 256, b = -1;
-            for (int y = 2; y < 15; y++) for (int xx = g_place_plate; xx < 256; xx++) { uint32_t q = tp[y * 256 + xx]; if ((q & 0xF0F0F0) == 0xF0F0F0) { if (xx < a) a = xx; if (xx > b) b = xx; } }
-            if (b < a) g_place_plate = -1; else { g_place_txt[0] = a; g_place_txt[1] = b + 1; }
+            const uint8_t* hm = g_hdtext_on ? g_hdtext_mask[a_on_top ? 0 : 1] : NULL;   /* (the HD text on: its letters not in the picture, in its mask) */
+            for (int y = 2; y < 15; y++) for (int xx = g_place_plate; xx < 256; xx++) { uint32_t q = tp[y * 256 + xx]; if ((q & 0xF0F0F0) == 0xF0F0F0 || (hm && hm[y * 256 + xx])) { if (xx < a) a = xx; if (xx > b) b = xx; } }
+            if (b < a) g_place_plate = -1; else { g_place_txt[0] = a; g_place_txt[1] = hm ? (b + 4 < 256 ? b + 4 : 256) : b + 1; }   /* (an HD letter's ink past its box's mark: a little more) */
         }
     }
     if (g_minimap && which == 1 && g_comp_has3d) {   /* the minimap: is the game's 2D (a menu) under it? Then it fades out, and back once that's gone */
