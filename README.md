@@ -48,7 +48,7 @@ Claude.
 - Item and equipment cards as **pop-ups**, **shops** on one screen with a
   modern item card.
 - **Character creation on one screen**, laid out for wide screens (choices in
-  pop-ups, name typed on the keyboard as an option), also at Patty's for
+  pop-ups, name typed on the keyboard, on by default), also at Patty's for
   companions.
 - **16:9 and 21:9 widescreen**: the picture follows the shape of the window or
   screen, with no black bars; menu sides blurred.
@@ -245,7 +245,7 @@ avec l'aide de Claude.
 - Fiches d'objets et d'équipement en **pop-up**, **magasins** sur un seul
   écran avec fiche d'objet moderne.
 - **Création du personnage sur un seul écran**, pensée pour les écrans larges
-  (choix en pop-up, nom tapé au clavier en option), aussi chez Tulipe pour les
+  (choix en pop-up, nom tapé au clavier, activé par défaut), aussi chez Tulipe pour les
   compagnons.
 - **Écran large 16:9 et 21:9** : l'image suit la forme de la fenêtre ou de
   l'écran, sans bandes noires ; côtés des menus floutés.
