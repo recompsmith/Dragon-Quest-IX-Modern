@@ -10,3 +10,10 @@ void log_flush_frame(void);        /* print the "N more log lines" notice now */
 /* cycle accounting (sched.c) */
 extern uint32_t g_cyc7;
 extern uint64_t g_interp_steps;
+
+/* cpu_state.c */
+void cpu_set_cpsr(Cpu* c, uint32_t v);      /* whole CPSR, flags included */
+
+/* cp15.c */
+extern uint32_t g_dtcm_size, g_itcm_size;
+void cp15_reset(void);

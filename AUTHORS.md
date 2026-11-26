@@ -42,3 +42,5 @@ by both; `git blame` shows who wrote each line.
 Also: function names from the public-domain DQIX decompilation project
 (`config/`), melonDS research for the wireless chip, 3D and sound, and the
 HD pack's tools (FatalPixels, UltraSharp, SeedVR2) — see README > Credits.
+
+The CPU core in `runtime/base/` adapts code from [melonDS](https://github.com/melonDS-emu/melonDS) 1.1 (commit b86390e, GPL-3.0-or-later) for the hardware blocks (ARM interpreter, CP15, memory map, I/O, timers, DMA, IPC, maths unit, SPI, firmware, RTC, direct boot); each such file names its melonDS source in its header.
