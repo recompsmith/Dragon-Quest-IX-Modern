@@ -40,14 +40,15 @@ NET_LIBS ?=
 GENOBJ = $(patsubst $(GEN)/%.c,$(OBJ)/gen/%.o,$(wildcard $(GEN)/*.c))
 GEN7OBJ = $(patsubst $(GEN7)/%.c,$(OBJ)/gen7/%.o,$(wildcard $(GEN7)/*.c))
 RTOBJ = $(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(RT))
-# runtime/base/wfc: its own headers too (objects in $(OBJ)/rt/base/wfc/, same rule as the runtime)
-$(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(filter runtime/base/wfc/%.c,$(RT))): $(wildcard runtime/base/wfc/*.h)
 
 # RES: optional extra objects for the program only, e.g. the Windows icon
 # resource the build makes from the ROM (tools/rom_icon.py)
 RES ?=
 $(OUT): $(GENOBJ) $(GEN7OBJ) $(RTOBJ) $(SLIRPOBJ) $(OBJ)/rt/exe_main.o $(RES)
 	$(CC) -o $@ $^ $(SDL_LIBS) -lm $(NET_LIBS) $(LDFLAGS)
+
+# runtime/base/wfc: its own headers too (objects in $(OBJ)/rt/base/wfc/, same rule as the runtime)
+$(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(filter runtime/base/wfc/%.c,$(RT))): $(wildcard runtime/base/wfc/*.h)
 
 # The game as a library (CORE=dqixcore.dll / dqixcore.so): in a session the
 # other players' DSes run from copies of it on one thread (hosting.c). Same
