@@ -3,7 +3,7 @@
 """Bundle the HD textures and movies into stored zips plus a manifest.
 
   make_hd_pack.py <textures_dir> <movies_dir> <out_dir> [--version 1] [--max-gb 1.9]
-                  [--extra launcher-back.jpg]
+                  [--extra launcher-back.jpg] [--ui <pictures_dir>]
 
 Writes hd-pack-textures-N.zip (entries textures/<16 hex>.png), hd-pack-movies.zip
 (entries movies/<file>) and hd-pack.txt:
@@ -18,6 +18,10 @@ movies/launcher-back.jpg (installed as movies/launcher-back.jpg, read by
 launcher/launcher.c): the movies zip already changes with each movie fix, and
 a textures zip would make everyone fetch the textures again for one picture.
 It is never kept in the repository.
+--ui puts the pictures for the game's own screens (the HD title:
+title-back[-<lang>]-<1080|1440|2160>.png) in hd-pack-ui-1.zip, entries ui/<file>,
+installed into textures/hd-pack/ui/ (read by the game when its ui/ lacks them).
+A zip of its own: adding them to a pack makes players fetch only that zip.
 """
 import argparse
 import hashlib
@@ -27,6 +31,7 @@ import sys
 import zipfile
 
 TEXTURE_RE = re.compile(r"^[0-9a-fA-F]{16}\.png$")
+UI_RE = re.compile(r"^[A-Za-z0-9_.-]+\.png$")
 MOVIE_EXTS = (".mpg", ".sig")
 EOCD = 22
 # A zip without ZIP64 holds at most 65535 entries.
@@ -100,6 +105,7 @@ def main(argv=None):
     ap.add_argument("--version", type=int, default=1)
     ap.add_argument("--max-gb", type=float, default=1.9)
     ap.add_argument("--extra", help="the launcher's background: a file named launcher-back.jpg")
+    ap.add_argument("--ui", help="pictures for the game's screens (title-back-*.png), into hd-pack-ui-1.zip")
     args = ap.parse_args(argv)
     if args.extra and os.path.basename(args.extra) != "launcher-back.jpg":
         raise SystemExit("--extra takes the launcher's background, a file named launcher-back.jpg")
@@ -128,6 +134,14 @@ def main(argv=None):
         raise SystemExit("movies do not fit in one zip under --max-gb")
     write_zip(os.path.join(args.out_dir, "hd-pack-movies.zip"), "movies/", chunks[0])
     names.append("hd-pack-movies.zip")
+    ui = list_files(args.ui, lambda n: UI_RE.match(n)) if args.ui else []
+    if args.ui and not ui:
+        raise SystemExit("no .png pictures found in %s" % args.ui)
+    if ui:
+        if len(split(ui, "ui/", limit)) > 1:
+            raise SystemExit("ui pictures do not fit in one zip under --max-gb")
+        write_zip(os.path.join(args.out_dir, "hd-pack-ui-1.zip"), "ui/", ui)
+        names.append("hd-pack-ui-1.zip")
 
     lines = ["hd-pack %d" % args.version]
     for name in names:
@@ -138,7 +152,7 @@ def main(argv=None):
         lines.append("zip %s %d %s" % (name, size, sha256_of(path)))
     with open(os.path.join(args.out_dir, "hd-pack.txt"), "w", newline="\n") as f:
         f.write("\n".join(lines) + "\n")
-    print("%d textures, %d movie files, %d zips" % (len(textures), len(movies), len(names)))
+    print("%d textures, %d movie files, %d ui pictures, %d zips" % (len(textures), len(movies), len(ui), len(names)))
     return 0
 
 

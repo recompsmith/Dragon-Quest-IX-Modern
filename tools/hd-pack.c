@@ -10,6 +10,9 @@
  *     nothing logged, exit 0 "uptodate" if a pack is installed, else exit 1
  *     "failed offline ...";
  *   - nothing to do if textures/hd-pack/hd-pack.txt has the same version;
+ *     else the zips installed as they are (same name, size, SHA-256) are
+ *     skipped: a pack that only changes the movies downloads only them, one
+ *     that adds hd-pack-ui-N.zip (the HD title's pictures) only that;
  *   - each zip downloaded into hd-pack-tmp/<zip>.part (WinHTTP; a cut
  *     download goes on from where it stopped next time, with Range), renamed
  *     <zip> when whole, size and SHA-256 checked (a bad one is deleted);
@@ -24,7 +27,7 @@
  *   - for the launcher (launcher/lnch_work.c), which runs it with --foreground
  *     (normal priority) and waits: hd-pack-status.txt, one line,
  *     "download <bytes> <of bytes> <zip i> <of n>", "install <i> <of n>" (n =
- *     zips + 1, the last step the install), "uptodate", "done" or "failed
+ *     zips fetched + 1, the last step the install; zips already installed are not counted), "uptodate", "done" or "failed
  *     <reason>" ("failed download: ..." when the network broke a download);
  *     exit code 0 installed or up to date, 1 failed (offline without a pack:
  *     "failed offline ..."; the early failures, folder refused, lock, local
@@ -41,7 +44,7 @@
 #include <winhttp.h>
 
 /* a new pack = a new release and a new address in a new version of the game */
-#define HD_PACK_URL L"https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases/download/hd-pack-1/"
+#define HD_PACK_URL L"https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases/download/hd-pack-2/"
 
 #define MAX_ZIPS 64
 #define MANIFEST_MAX (64 * 1024)
@@ -254,6 +257,11 @@ static int zip_ok(const wchar_t* path, const HpZip* z) {
     return !strcmp(sha, z->sha);
 }
 
+/* hd-pack-textures-N.zip (tools/make_hd_pack.py): it unpacks into textures/ */
+static int is_textures_zip(const char* name) { return !strncmp(name, "hd-pack-textures-", 17); }
+/* hd-pack-ui-N.zip: pictures for the game's own screens (ui/<file>), installed into textures\\hd-pack\\ui */
+static int is_ui_zip(const char* name) { return !strncmp(name, "hd-pack-ui-", 11); }
+
 static void open_log(void) {
     if (hp_logfile) return;
     wchar_t logp[HP_WMAX];
@@ -363,14 +371,30 @@ int wmain(int argc, wchar_t** argv) {
 
     /* installed already? Then nothing is touched, except what an earlier run
      * could not finish: a bar left saying "working", folders not yet set aside */
+    /* ...else the zips already installed as they are (same name, size and
+     * SHA-256) are neither fetched nor unpacked: a new pack that changes only
+     * the movies downloads only them. The textures zips go together (the
+     * install replaces textures\hd-pack whole): kept only if all are the same. */
+    static int kept[MAX_ZIPS];
     {
-        static char have[MANIFEST_MAX]; static HpZip hz[MAX_ZIPS]; int hv = -1;
-        if (!hp_join(path, G, L"textures\\hd-pack\\hd-pack.txt") && read_small(path, have, sizeof have) >= 0
-            && hp_parse_manifest(have, &hv, hz, MAX_ZIPS) >= 0 && hv == version) {
+        static char have[MANIFEST_MAX]; static HpZip hz[MAX_ZIPS]; int hv = -1, nh = -1;
+        if (!hp_join(path, G, L"textures\\hd-pack\\hd-pack.txt") && read_small(path, have, sizeof have) >= 0)
+            nh = hp_parse_manifest(have, &hv, hz, MAX_ZIPS);
+        if (nh >= 0 && hv == version) {
             if (hp_realesrgan_packW(G) && aside_pending()) { open_log(); set_aside(); }
             status("uptodate");
             CloseHandle(lh); return 0;
         }
+        int tex_new = 0, tex_had = 0, tex_same = 0;
+        for (int k = 0; k < nh; k++) tex_had += is_textures_zip(hz[k].name);
+        for (int i = 0; i < nz; i++) {
+            kept[i] = 0;
+            for (int k = 0; k < nh && !kept[i]; k++)
+                kept[i] = !strcmp(zips[i].name, hz[k].name) && zips[i].size == hz[k].size && !strcmp(zips[i].sha, hz[k].sha);
+            if (is_textures_zip(zips[i].name)) { tex_new++; tex_same += kept[i]; }
+        }
+        if (tex_same != tex_new || tex_new != tex_had)          /* the ui pictures live in textures\\hd-pack\\ui: fetched again with it */
+            for (int i = 0; i < nz; i++) if (is_textures_zip(zips[i].name) || is_ui_zip(zips[i].name)) kept[i] = 0;
     }
 
     open_log();
@@ -385,11 +409,13 @@ int wmain(int argc, wchar_t** argv) {
     /* 1. every zip here and checked (downloads first: nothing is unpacked
      *    before all of them are whole) */
     g_total = 0;
-    for (int i = 0; i < nz; i++) g_total += zips[i].size;
-    g_before = 0; g_nzip = nz;
-    for (int i = 0; i < nz; i++) {
+    for (int i = 0; i < nz; i++) if (!kept[i]) g_total += zips[i].size;
+    g_before = 0; g_nzip = 0;
+    for (int i = 0; i < nz; i++) g_nzip += !kept[i];
+    for (int i = 0, fetched = 0; i < nz; i++) {
         wchar_t zname[128], from[HP_WMAX], zpath[HP_WMAX];
-        g_zip = i + 1; g_last_bar = 0; bar(0);
+        if (kept[i]) { hp_log("  %s: already installed\n", zips[i].name); continue; }
+        g_zip = ++fetched; g_last_bar = 0; bar(0);
         g_downloading = !local;
         if (hp_wide(zips[i].name, zname) || hp_join(zpath, tmp, zname)) { hp_log("  path too long\n"); goto fail; }
         if (!hp_safe_path(G, zpath)) { hp_log("  refused (unsafe path): %s\n", hp_u8(zpath)); goto fail; }
@@ -431,12 +457,13 @@ int wmain(int argc, wchar_t** argv) {
         }
     }
     if (hp_mkdir(G, stage)) { hp_log("  can't make %s\n", hp_u8(stage)); goto fail; }
-    for (int i = 0; i < nz; i++) {
+    for (int i = 0, unpacked = 0; i < nz; i++) {
         wchar_t zname[128], zpath[HP_WMAX];
+        if (kept[i]) continue;
         if (hp_wide(zips[i].name, zname) || hp_join(zpath, tmp, zname)) goto fail;
         if (hp_unzip_storedW(zpath, stage)) { hp_log("  %s: can't unpack\n", zips[i].name); goto fail; }
         progress("working", 85 + (i + 1) * 10 / nz);
-        status("install %d %d", i + 1, nz + 1);
+        status("install %d %d", ++unpacked, g_nzip + 1);
     }
 
     wchar_t smark[HP_WMAX];
@@ -450,10 +477,14 @@ int wmain(int argc, wchar_t** argv) {
 
     if (hp_realesrgan_packW(G)) set_aside();
 
-    /* tidy up: the verified zips by their names, then the empty folders made */
+    /* tidy up: the zips by their names (and the .part an earlier cut run left
+     * of a zip kept this time), then the empty folders made */
     for (int i = 0; i < nz; i++) {
-        wchar_t zname[128], zpath[HP_WMAX];
-        if (!hp_wide(zips[i].name, zname) && !hp_join(zpath, tmp, zname)) hp_delete_own(G, zpath);
+        wchar_t zname[128], zpath[HP_WMAX], part[HP_WMAX];
+        if (!hp_wide(zips[i].name, zname) && !hp_join(zpath, tmp, zname)) {
+            hp_delete_own(G, zpath);
+            if (wcslen(zpath) + 5 < HP_WMAX) { _snwprintf(part, HP_WMAX, L"%ls.part", zpath); hp_delete_own(G, part); }
+        }
     }
     hp_rmdirs_since(G, 0);
     hp_rmdir_own(G, stage);                                    /* ours from an earlier run, if empty */
