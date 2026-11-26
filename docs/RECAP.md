@@ -13,7 +13,7 @@ Sommaire :
 3. Architecture technique
 4. Compiler et tester
 5. Comment le projet est organisé aujourd'hui
-6. Règles permanentes (décisions de Romuald)
+6. Règles permanentes (décisions de recompsmith)
 7. Ce qui a été fait, par thème, avec les PR
 8. Versions publiées
 9. Relations avec le projet d'origine (sackchief)
@@ -35,7 +35,7 @@ entrées) avec SDL2 et OpenGL.
 
 - Projet d'origine : `sackchief/dqix-enhanced` (fonctionnait seulement avec la
   ROM américaine).
-- Ce fork : `romusan495/DQIX-EnhancedEU`, tenu par Romuald avec Claude depuis le
+- Ce fork : `recompsmith/DQIX-EnhancedEU`, tenu par recompsmith avec Claude depuis le
   19 octobre 2026.
 - Point de départ : **corriger la ROM européenne** (fait le 19/10). Depuis, le
   fork est devenu une **modernisation façon jeu PC** : un seul écran, fenêtres
@@ -60,15 +60,15 @@ fusionnées dans `main` du 21 au 29 octobre ; 10 versions publiées (v31.1 à v3
 
 | Quoi | Où | Remarque |
 |---|---|---|
-| Code source (seule référence) | GitHub `romusan495/DQIX-EnhancedEU`, branche `main` | Public. Jamais de ROM ni de données du jeu. |
+| Code source (seule référence) | GitHub `recompsmith/DQIX-EnhancedEU`, branche `main` | Public. Jamais de ROM ni de données du jeu. |
 | Branche des joueurs | `stable` (+ tags `v31.N`) | Lue par Aide > Rechercher des mises à jour. |
-| Fork pour proposer au projet d'origine | `romusan495/dqix-enhanced` | Sert seulement aux PR vers sackchief. |
-| Projet d'origine | `sackchief/dqix-enhanced` | En v32 depuis le 27/10 (non porté ici, choix de Romuald). |
-| PC de Romuald, clone de dev | `J:\DQIX-Enhanced-repo` | Reste sur `main`. |
-| PC de Romuald, worktrees | `J:\DQIX-wt\<role>-<sujet>` | Un par branche de dev. |
-| PC de Romuald, le jeu joué | `J:\DQIX-Enhanced` | Checkout de `main`. **Jamais édité à la main** : `git pull --ff-only` + `BUILD.bat`, avec son accord. |
+| Fork pour proposer au projet d'origine | `recompsmith/dqix-enhanced` | Sert seulement aux PR vers sackchief. |
+| Projet d'origine | `sackchief/dqix-enhanced` | En v32 depuis le 27/10 (non porté ici, choix de recompsmith). |
+| PC de recompsmith, clone de dev | `J:\DQIX-Enhanced-repo` | Reste sur `main`. |
+| PC de recompsmith, worktrees | `J:\DQIX-wt\<role>-<sujet>` | Un par branche de dev. |
+| PC de recompsmith, le jeu joué | `J:\DQIX-Enhanced` | Checkout de `main`. **Jamais édité à la main** : `git pull --ff-only` + `BUILD.bat`, avec son accord. |
 | Sauvegardes du dossier de jeu | `J:\DQIX-Backups\` | Avant toute mise à jour risquée. |
-| Fichiers de travail du projet Claude de Romuald | dossier partagé privé du projet (captures, études, recettes de test, références du test de fumée) | **Pas accessible au 2e dev.** Ce qui doit être partagé passe par le dépôt (si ce n'est pas dérivé du jeu) ou directement entre humains. |
+| Fichiers de travail du projet Claude de recompsmith | dossier partagé privé du projet (captures, études, recettes de test, références du test de fumée) | **Pas accessible au 2e dev.** Ce qui doit être partagé passe par le dépôt (si ce n'est pas dérivé du jeu) ou directement entre humains. |
 
 Documents de référence dans le dépôt :
 
@@ -143,7 +143,7 @@ config/usa/arm9 (symboles)   runtime/ (C, SDL2 + OpenGL)  ──►  game/dqix.e
 
 ## 4. Compiler et tester
 
-### Sur Windows (PC de Romuald)
+### Sur Windows (PC de recompsmith)
 ```
 cmd /c "set DQIX_NOPAUSE=1&& <dossier>\BUILD.bat"
 ```
@@ -153,7 +153,7 @@ chemin de `rom\last-rom.txt`. Premier build : plusieurs minutes.
 Avertissement connu sans gravité : `cmp: commande introuvable`.
 
 ### Dans le cloud Linux (là où les Claude testent)
-**Romuald ne veut pas de tests de jeu sur son PC.** Tous les tests se font sur
+**recompsmith ne veut pas de tests de jeu sur son PC.** Tous les tests se font sur
 Linux sous xvfb, avec la ROM **EU et la ROM USA**.
 ```
 apt-get install -y libsdl2-dev python3-yaml xvfb
@@ -172,7 +172,7 @@ Outils de test :
   Stornway, ville avec mini-carte, combat contre un Funghoul) et les compare
   aux références. Le jeu est déterministe : écart 0,00 attendu. La sauvegarde,
   la recette et les références sont **dérivées du jeu**, donc hors du dépôt
-  (dans le dossier privé du projet de Romuald ; à recréer ou à transmettre
+  (dans le dossier privé du projet de recompsmith ; à recréer ou à transmettre
   entre humains).
 - Variables utiles : `DQIX_INPUT_FILE` (rejouer des entrées), `DQIX_WINSHOT_AT`
   (capture de la fenêtre à une image donnée), `DQIX_CHEAT_CODE`,
@@ -182,15 +182,15 @@ Outils de test :
 - Menus Windows : compilation croisée mingw-w64 et test sous wine + xdotool.
 
 **Toute modification visible** (interface, graphisme) doit être montrée à
-Romuald en **captures avant/après** avant de demander son accord.
+recompsmith en **captures avant/après** avant de demander son accord.
 
 ---
 
 ## 5. Comment le projet est organisé aujourd'hui
 
-Romuald travaille dans un **projet Claude** (privé) :
+recompsmith travaille dans un **projet Claude** (privé) :
 
-- un **coordinateur** (Claude) dans la discussion principale : Romuald y écrit
+- un **coordinateur** (Claude) dans la discussion principale : recompsmith y écrit
   ses demandes, le coordinateur les range ;
 - un **fil (thread) par sujet**, chacun tenu par un Claude, nommé
   « [Rôle] Sujet » ;
@@ -214,7 +214,7 @@ la branche qui les modifie) : `runtime/gl_render.c`, `runtime/menu_win32.c`,
 `runtime/controls.c`, `runtime/mapmarks.c`, `runtime/gpu2d.c`.
 
 ### Le cycle d'une fonctionnalité
-1. Romuald demande dans la discussion principale ; le coordinateur ouvre un fil
+1. recompsmith demande dans la discussion principale ; le coordinateur ouvre un fil
    « [Rôle] Sujet » (ou relaie au fil existant).
 2. Le fil travaille sur sa branche (dans le cloud : `claude/project-thread-xxxx` ;
    sur le PC : `<role>/<sujet>` dans un worktree).
@@ -222,12 +222,12 @@ la branche qui les modifie) : `runtime/gl_render.c`, `runtime/menu_win32.c`,
    captures, et envoie un **compte rendu** : Objectif · Fichiers modifiés ·
    Tests exécutés (commande + résultat réel) · Résultats · Risques ·
    Prochaine action · État Git.
-4. Romuald regarde les captures et écrit « ok push » puis « fusionne » **dans le
+4. recompsmith regarde les captures et écrit « ok push » puis « fusionne » **dans le
    fil**. Le fil pousse, ouvre la PR, la fusionne.
 5. Les PR passent **une par une**, chaque branche rebasée sur `main` juste avant.
 6. Le dossier de jeu est mis à jour (`git pull --ff-only` + BUILD.bat) seulement
-   quand Romuald le demande.
-7. Une version GitHub est préparée quand Romuald la demande (environ une fois
+   quand recompsmith le demande.
+7. Une version GitHub est préparée quand recompsmith la demande (environ une fois
    par semaine) ; c'est lui qui clique sur « Publish release ».
 
 ### Fils permanents utiles
@@ -238,7 +238,7 @@ la branche qui les modifie) : `runtime/gl_render.c`, `runtime/menu_win32.c`,
 
 ---
 
-## 6. Règles permanentes (décisions de Romuald)
+## 6. Règles permanentes (décisions de recompsmith)
 
 Ces règles valent pour **tous** les Claude, des deux équipes.
 
@@ -248,12 +248,12 @@ Ces règles valent pour **tous** les Claude, des deux équipes.
 2. **Ne jamais toucher aux boîtes de combat** (commandes Attaquer/Examiner,
    panneaux PV/PM). Le contour blanc existe seulement sur « Expérience gagnée »,
    « Caractéristiques augmentées » et la boîte de texte du bas en combat.
-3. **Pas de test de jeu sur le PC de Romuald.** Tests dans le cloud Linux, ROM
+3. **Pas de test de jeu sur le PC de recompsmith.** Tests dans le cloud Linux, ROM
    EU et USA. Son PC ne sert qu'au build de son jeu, quand il le demande.
 4. **Jamais de données du jeu sur GitHub** : pas de `*.nds`, `build/`, `game/`,
    sauvegardes, dumps, textures ou films upscalés, C généré. Vérifier
    `git status` avant chaque commit. Une version = le code source seul.
-5. **Accord explicite de Romuald** avant tout push, fusion, suppression de
+5. **Accord explicite de recompsmith** avant tout push, fusion, suppression de
    branche ou de fichier, réécriture d'historique, et avant de toucher à
    `J:\DQIX-Enhanced`. Son accord doit être écrit dans le fil qui fait l'action.
 6. **Captures avant/après** pour tout changement visible, montrées avant de
@@ -275,14 +275,14 @@ Ces règles valent pour **tous** les Claude, des deux équipes.
     prêt à copier.
 15. Commits, branches et PR en anglais ; discussions en français.
 
-Abandonné à la demande de Romuald : comparaison d'équipement dans les magasins
+Abandonné à la demande de recompsmith : comparaison d'équipement dans les magasins
 (29/10), travail sur la visibilité des dégâts et des altérations d'état en combat.
 
 ---
 
 ## 7. Ce qui a été fait, par thème
 
-PR = pull request fusionnée dans `main` de `romusan495/DQIX-EnhancedEU`.
+PR = pull request fusionnée dans `main` de `recompsmith/DQIX-EnhancedEU`.
 
 ### ROM européenne et langues
 - Correctif ROM EU (19/10) : décalage des adresses ARM9, stubs BIOS réordonnés,
@@ -324,7 +324,7 @@ PR = pull request fusionnée dans `main` de `romusan495/DQIX-EnhancedEU`.
 - Boutons réels de la manette dans les indications (« X Menu »), option
   « confirmer avec le bouton du bas » : PR #49.
 - Confirmation avant de quitter : PR #29. Barre de menus sans « Menu » vide : PR #47.
-- Réglages par défaut = la configuration de Romuald, options inutiles cachées : PR #15.
+- Réglages par défaut = la configuration de recompsmith, options inutiles cachées : PR #15.
 
 ### Graphismes
 - Avant le dépôt (19-20/10) : texte HD, textures xBR, 2D lissée, packs de
@@ -384,11 +384,11 @@ extraites et upscalées automatiquement).
 
 - PR #8 sur `sackchief/dqix-enhanced` (ROM EU + premières options graphiques) :
   toujours ouverte, mais sackchief a intégré le correctif EU et le menu Langue
-  dans sa v32 en créditant Romuald.
+  dans sa v32 en créditant recompsmith.
 - PR #14 : écran unique en combat, proposée depuis le fork.
 - Sauvegarde automatique portée sur v32, branche poussée sur le fork, PR ouverte
-  par Romuald.
-- La session cloud ne peut pas ouvrir de PR sur le dépôt de sackchief : Romuald
+  par recompsmith.
+- La session cloud ne peut pas ouvrir de PR sur le dépôt de sackchief : recompsmith
   les ouvre lui-même avec un lien préparé.
 - sackchief a suggéré une caméra un peu dézoomée en combat (pas encore fait).
 - Communauté Discord du projet d'origine : https://discord.gg/CczgRv36NK
@@ -402,8 +402,8 @@ extraites et upscalées automatiquement).
   coffres dans les grottes, et si possible les rangs possibles avant d'entrer
   (comme le site yabd.org). Rangs trouvés dans `randTD.bin`, banc de test de
   grotte prêt, affichage pas encore codé.
-- À vérifier par Romuald sur sa vraie sauvegarde : les recettes connues du Journal.
-- Le dossier de jeu de Romuald n'a pas forcément été recompilé avec les
+- À vérifier par recompsmith sur sa vraie sauvegarde : les recettes connues du Journal.
+- Le dossier de jeu de recompsmith n'a pas forcément été recompilé avec les
   dernières PR.
 
 ### Feuille de route restante (détail dans `docs/SUIVI.md`)
@@ -412,18 +412,18 @@ extraites et upscalées automatiquement).
 | P1 | Caméra dézoomée en combat | Sans toucher aux boîtes |
 | P1 | Liste des monstres et journal des quêtes du jeu en pop-up | Recette de test d'abord |
 | P1 | Effets visuels (éclairage, eau, météo) | Risque élevé, options désactivées par défaut |
-| P2 | Retirer le code mort des anciennes dispositions (`MI_STACKED`, `MI_SIDE`, `g_wide_pop`…) dans `frontend_sdl.c` | Seulement avec l'accord de Romuald |
+| P2 | Retirer le code mort des anciennes dispositions (`MI_STACKED`, `MI_SIDE`, `g_wide_pop`…) dans `frontend_sdl.c` | Seulement avec l'accord de recompsmith |
 | P2 | Cartes au trésor, grottes explorées, collections (monstres vaincus) | Grottes générées depuis une graine : générateur à réécrire |
 | P2 | Plans des grottes (Z00Mxx) sur la carte | Pas d'image dans la ROM |
 | P3 | Contenus (défis, encyclopédie, personnalisation) | Après stabilisation |
 | Divers | `cmp` manquant sous MSYS2 | Sans gravité |
-| Long terme | Étude « vers un vrai jeu PC » (23/10) : nommer le code, son natif, 60 fps, réécriture progressive ; Romuald a évoqué une décompilation complète + Godot | Rien de commencé |
+| Long terme | Étude « vers un vrai jeu PC » (23/10) : nommer le code, son natif, 60 fps, réécriture progressive ; recompsmith a évoqué une décompilation complète + Godot | Rien de commencé |
 
 ---
 
 ## 11. Coordonner deux équipes Claude sur le même dépôt
 
-Le projet Claude de Romuald est **privé** : le Claude du deuxième développeur ne
+Le projet Claude de recompsmith est **privé** : le Claude du deuxième développeur ne
 peut ni y entrer, ni lire sa mémoire, ni son dossier partagé. **Le point de
 rencontre est le dépôt GitHub.** Tout ce qui doit être partagé y vit (code,
 règles, suivi), sauf les données du jeu, qui passent d'humain à humain.
@@ -431,16 +431,16 @@ règles, suivi), sauf les données du jeu, qui passent d'humain à humain.
 ### Principes
 1. **Une seule `main`, une seule source.** Personne ne pousse directement sur
    `main` ; tout passe par une PR.
-2. **Romuald garde le dernier mot sur `main`** (fusions, versions, `stable`),
+2. **recompsmith garde le dernier mot sur `main`** (fusions, versions, `stable`),
    sauf s'il délègue explicitement au deuxième développeur un périmètre.
 3. **Chaque équipe a son préfixe de branche**, pour voir d'un coup d'œil qui
    fait quoi :
-   - équipe Romuald : `claude/project-thread-*` (cloud) et `<role>/<sujet>` ;
+   - équipe recompsmith : `claude/project-thread-*` (cloud) et `<role>/<sujet>` ;
    - équipe 2 : **`remake/<sujet>`** (ou le pseudo du développeur), jamais un
      préfixe de l'autre équipe.
 4. **`docs/SUIVI.md` est le registre commun.** Chaque tâche de l'équipe 2 y a sa
    ligne (colonne « Rôle » = `Équipe 2` ou son rôle). La ligne est ajoutée dans
-   la PR de l'équipe 2 elle-même ; l'Intégration de Romuald la garde à jour à la
+   la PR de l'équipe 2 elle-même ; l'Intégration de recompsmith la garde à jour à la
    fusion.
 5. **Annoncer avant de toucher un fichier partagé.** Ouvrir tout de suite une
    **PR en brouillon** (draft) dès le premier commit, avec dans sa description la
@@ -467,34 +467,34 @@ règles, suivi), sauf les données du jeu, qui passent d'humain à humain.
       signés « Generated by Claude Code ») ; une **issue épinglée
       « Coordination »** peut servir de fil commun pour les annonces (« je prends
       tel sujet », « je touche `frontend_sdl.c` cette semaine ») ;
-    - Romuald relaie à son coordinateur ce que l'équipe 2 annonce, et
+    - recompsmith relaie à son coordinateur ce que l'équipe 2 annonce, et
       inversement.
 
 ### Qui fait quoi à la fusion
-| Étape | Équipe 2 | Équipe Romuald |
+| Étape | Équipe 2 | Équipe recompsmith |
 |---|---|---|
 | Branche, code, tests cloud EU + USA, captures | oui | — |
 | PR (brouillon puis prête) avec compte rendu commun et ligne SUIVI | oui | — |
 | Revue (code-simplifier, review-pr, test de fumée) | peut la faire elle-même | Intégration relit |
-| Accord de fusion | — | **Romuald** |
-| Fusion, version, `stable`, build du dossier de jeu | — | Intégration, avec accord de Romuald |
+| Accord de fusion | — | **recompsmith** |
+| Fusion, version, `stable`, build du dossier de jeu | — | Intégration, avec accord de recompsmith |
 
 ---
 
 ## 12. Mise en place pour le deuxième développeur (pas à pas)
 
-Pour retrouver la même organisation que Romuald avec son propre Claude :
+Pour retrouver la même organisation que recompsmith avec son propre Claude :
 
-1. **Accès GitHub** : Romuald l'ajoute comme **collaborateur** de
-   `romusan495/DQIX-EnhancedEU` (décidé le 29/10) : il pousse ses branches
+1. **Accès GitHub** : recompsmith l'ajoute comme **collaborateur** de
+   `recompsmith/DQIX-EnhancedEU` (décidé le 29/10) : il pousse ses branches
    `remake/…` directement sur le dépôt. Connecter GitHub à Claude et installer
    l'application Claude sur le dépôt.
 2. **Créer un projet Claude** (claude.ai, Claude Code sur le web) avec ce dépôt
    comme source.
 3. **Instructions du projet** : coller le bloc ci-dessous (version adaptée de
-   celles de Romuald).
+   celles de recompsmith).
 4. **Ses propres ressources, jamais sur GitHub** : sa ROM (USA ou EU), une
-   sauvegarde de test, les références du test de fumée (à demander à Romuald ou
+   sauvegarde de test, les références du test de fumée (à demander à recompsmith ou
    à refaire avec `tests/smoke/run.py`).
 5. **Premier fil** : demander à son Claude de lire `CLAUDE.md`,
    `docs/roles/`, `docs/SUIVI.md`, ce récapitulatif, et de proposer un plan pour
@@ -509,10 +509,10 @@ Pour retrouver la même organisation que Romuald avec son propre Claude :
 ```
 Règles communes — DQIX Enhanced EU, équipe 2 (remake)
 Tu travailles sur un portage natif PC de Dragon Quest IX déjà très modifié,
-avec une autre équipe Claude (celle de Romuald) sur le même dépôt.
+avec une autre équipe Claude (celle de recompsmith) sur le même dépôt.
 
 Au démarrage : lis CLAUDE.md, docs/roles/, docs/SUIVI.md et docs/RECAP.md
-du dépôt romusan495/DQIX-EnhancedEU. Regarde les PR ouvertes avant de
+du dépôt recompsmith/DQIX-EnhancedEU. Regarde les PR ouvertes avant de
 commencer un sujet.
 
 Obligatoire
@@ -531,7 +531,7 @@ Obligatoire
   C généré sur GitHub.
 * Tests dans le cloud Linux sur les ROM EU et USA ; n'annonce jamais un test
   non exécuté. Captures avant/après pour tout changement visible.
-* Fusion dans main seulement avec l'accord de Romuald.
+* Fusion dans main seulement avec l'accord de recompsmith.
 
 Compte rendu à chaque jalon : Objectif · Fichiers modifiés · Tests exécutés
 (commande + résultat réel) · Résultats · Risques · Prochaine action · État Git.
@@ -542,7 +542,7 @@ Commits, branches et PR en anglais.
 
 ## 13. Le projet remake (Godot) : à quoi sert ce dépôt
 
-Précisé par Romuald le 29/10. Le but final est un **remake** : quand la
+Précisé par recompsmith le 29/10. Le but final est un **remake** : quand la
 **décompilation** du jeu sera terminée, le jeu sera **réécrit avec le moteur
 Godot**, pensé dès le départ pour le PC, sur **un seul écran**, comme si le
 second écran de la DS n'avait jamais existé.
@@ -553,11 +553,11 @@ le remake récupérera :
 
 | Ce qui est appris ici | Où le trouver | Utilité pour le remake |
 |---|---|---|
-| Les choix d'interface validés par Romuald (écran unique, carte en haut à droite, fiches en pop-up, HUD de combat, style Moderne, Journal, indications de boutons) | sections 6 et 7, captures, `release-notes/` | Cahier des charges de l'interface Godot, déjà testé en jeu |
+| Les choix d'interface validés par recompsmith (écran unique, carte en haut à droite, fiches en pop-up, HUD de combat, style Moderne, Journal, indications de boutons) | sections 6 et 7, captures, `release-notes/` | Cahier des charges de l'interface Godot, déjà testé en jeu |
 | Ce qui se trouvait sur l'écran du haut et où on l'a mis (carte, fiches, panneaux de combat, magasins) | `frontend_sdl.c` (`hud_update`, `pop_update`, `shop_update`), `mapmarks.c` | Inventaire des écrans à redessiner pour un seul écran |
 | Les données du jeu et leur format (recettes, quêtes, objets, compétences, collisions des cartes, rangs des coffres, films) | `mapmarks.c`, `romdata.h`, `journal*.c`, mémoire du projet | Lecteurs de données réutilisables pour importer les ressources dans Godot |
 | Les adresses RAM (personnages, sac, quêtes, or, vocations) | section 3, `cheats.c`, `journal*.c` | Recoupement avec la décompilation, tests de fidélité |
-| Les règles permanentes (pas de réseau, boîtes de combat, pas de données du jeu publiées) | section 6 | Restent valables, sauf décision contraire de Romuald |
+| Les règles permanentes (pas de réseau, boîtes de combat, pas de données du jeu publiées) | section 6 | Restent valables, sauf décision contraire de recompsmith |
 | Le test de fumée et les recettes d'entrées (jeu déterministe) | `tests/smoke/` | Comparer le remake au jeu d'origine scène par scène |
 
 Conséquences pour les deux équipes, dès maintenant :
@@ -571,7 +571,7 @@ Conséquences pour les deux équipes, dès maintenant :
   **privé ou sans données du jeu** : du code réécrit à partir de la
   décompilation et les ressources du jeu restent dérivés du jeu et ne se
   publient pas. Seul un lanceur qui lit la ROM du joueur, comme ici, peut être
-  public. À décider avec Romuald avant de commencer.
+  public. À décider avec recompsmith avant de commencer.
 - La décompilation de référence est celle de **dqix-decomp** (domaine public),
   dont vient déjà `config/usa/arm9`. Environ 9 % des fonctions y ont un nom
   aujourd'hui : nommer les fonctions utiles au passage aide les deux projets.
@@ -585,5 +585,5 @@ Conséquences pour les deux équipes, dès maintenant :
 - ~~Le « remake »~~ : réglé le 29/10, voir la section 13 (réécriture Godot
   après la décompilation, dans un dépôt séparé ; ce dépôt sert de référence).
 - La décompilation : qui la mène (dqix-decomp, le 2e développeur, une équipe
-  Claude ?) et à quel rythme ? À préciser entre Romuald et le 2e développeur.
+  Claude ?) et à quel rythme ? À préciser entre recompsmith et le 2e développeur.
 - ~~Ajouter ce récapitulatif au dépôt~~ : fait le 29/10 (`docs/RECAP.md`).
