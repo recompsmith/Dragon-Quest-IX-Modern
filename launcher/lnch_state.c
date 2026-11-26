@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* When PLAY lights up, and what the status line says: see lnch.h. */
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +16,7 @@ static int pack_pending(const LState* s) {
 
 int lstate_can_play(const LState* s) {
     if (s->rom_needed || s->update_unbuilt) return 0; /* no ROM yet; a half-new tree: the build must finish first */
-    if (s->download_failed && s->modern) return 0;    /* Romuald: a broken download blocks Modern, not Classic */
+    if (s->download_failed && s->modern) return 0;    /* recompsmith: a broken download blocks Modern, not Classic */
     if (s->update == ST_RUNNING || s->build == ST_RUNNING || s->pack == ST_RUNNING) return 0;
     if (s->update == ST_FAILED || s->build == ST_FAILED || s->pack == ST_FAILED) return 0;
     if (!s->game_built) return 0;

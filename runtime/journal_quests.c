@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Journal > Quests: the quests the game has offered, under way and done, in
  * the game's own words: the request (what the quest list shows), the game's
  * hint only when asked for (H / Y), what came of it once done, and the quest

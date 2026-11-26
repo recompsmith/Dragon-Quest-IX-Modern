@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """DQIX character (/data/chara_sub/<name>.chr in the player's own ROM) -> .npc3 for the game
 (runtime/npc3d.c): stand and walk baked, one frame per animation frame."""
 import os, numpy as np

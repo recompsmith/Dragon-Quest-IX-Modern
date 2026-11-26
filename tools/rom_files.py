@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """List and extract files from a Nintendo DS ROM (NDS) using its FNT/FAT.
 
 usage: rom_files.py <rom.nds> <out_dir> [glob, default data/movie/*.mods]

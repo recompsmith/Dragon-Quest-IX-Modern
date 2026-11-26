@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The news: GitHub's list of releases, or the release notes the build put in
  * game/notes (offline, and for the player's language). See lnch.h. */
 #include <stdio.h>

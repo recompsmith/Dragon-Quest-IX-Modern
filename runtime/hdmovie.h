@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* HD movies: the game's Mobiclip movies (the .mods files in data/movie: the opening, the
  * dragon, "to be continued") shown from upscaled copies instead.
  *

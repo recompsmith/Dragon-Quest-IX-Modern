@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 #ifndef SAVEFILE_H
 #define SAVEFILE_H
 #include <stddef.h>

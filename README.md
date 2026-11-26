@@ -20,8 +20,8 @@ with SDL2 and OpenGL.
 
 Built on [dqix-enhanced](https://github.com/sackchief/dqix-enhanced) by **sackchief**, the original project (USA
 ROM only), which this repository is a fork of. Since 19 October 2026 (his
-v31), this project no longer takes his updates. Developed by **Romuald**
-([romusan495](https://github.com/romusan495)) and **TitanFr199**, helped by
+v31), this project no longer takes his updates. Developed by **recompsmith**
+([recompsmith](https://github.com/recompsmith)) and **TitanFr199**, helped by
 Claude.
 
 > **Rights and use, please read.** This project is for **educational purposes only** (studying recompilation and game preservation). Dragon Quest IX and all its content belong to their rights holders (Square Enix, Level-5, Armor Project, Bird Studio, Koichi Sugiyama, Nintendo). **No ROM is provided, and none ever will be.** To make it work, you must use **a ROM dumped from your own cartridge** of Dragon Quest IX, which you legally own. Don't download ROMs, and don't share ROMs, the built game or any game files.
@@ -130,7 +130,7 @@ You need the ROM (`.nds`) of **your own** cartridge (European or USA version),
 Windows 10 or 11 (64-bit), about 3 GB free, and Internet the first time.
 
 1. Download the latest version from the
-   **[releases page](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases)**
+   **[releases page](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases)**
    (*Dragon-Quest-IX-Modern-…-Windows-x64.zip*, or *-Linux-x64.zip*) and unzip it.
 2. Double-click **`DQIX Launcher.exe`** (`dqix-launcher` on Linux and the Steam
    Deck). The first time it asks for your ROM (**CHOOSE THE ROM**), then builds
@@ -212,7 +212,7 @@ avec SDL2 et OpenGL.
 Construit sur [dqix-enhanced](https://github.com/sackchief/dqix-enhanced) de **sackchief**, le projet d'origine
 (ROM américaine seulement), dont ce dépôt est un fork. Depuis le 19 octobre
 2026 (sa v31), ce projet ne reprend plus ses mises à jour. Projet développé par
-**Romuald** ([romusan495](https://github.com/romusan495)) et **TitanFr199**,
+**recompsmith** ([recompsmith](https://github.com/recompsmith)) et **TitanFr199**,
 avec l'aide de Claude.
 
 > **Droits et usage — à lire.** Ce projet est réalisé **à des fins éducatives uniquement** (étude de la recompilation et de la préservation des jeux). Dragon Quest IX et tout son contenu appartiennent à leurs ayants droit (Square Enix, Level-5, Armor Project, Bird Studio, Koichi Sugiyama, Nintendo). **Aucune ROM n'est fournie et aucune ne le sera.** Pour que le projet fonctionne, vous devez utiliser **une ROM extraite de votre propre cartouche** de Dragon Quest IX, que vous possédez légalement. Ne téléchargez pas de ROM et ne partagez ni ROM, ni jeu compilé, ni fichiers du jeu.
@@ -326,7 +326,7 @@ ou américaine), Windows 10 ou 11 (64 bits), environ 3 Go libres, et Internet la
 première fois.
 
 1. Téléchargez la dernière version sur la
-   **[page des versions](https://github.com/romusan495/Dragon-Quest-IX-Modern/releases)**
+   **[page des versions](https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases)**
    (*Dragon-Quest-IX-Modern-…-Windows-x64.zip*, ou *-Linux-x64.zip*) et décompressez-la.
 2. Double-cliquez sur **`DQIX Launcher.exe`** (`dqix-launcher` sous Linux et sur
    Steam Deck). La première fois, il demande votre ROM (**CHOISIR LA ROM**), puis
@@ -397,7 +397,7 @@ Posez vos questions sur le [Discord](https://discord.gg/z9X9PH8AH4).
   ([dqix-enhanced](https://github.com/sackchief/dqix-enhanced)). Ce dépôt en est un fork, avec son historique ; ses mises à jour
   ne sont plus reprises depuis le 19 octobre 2026. / This repository is a fork
   of it, with its history; his updates are no longer taken since 19 October 2026.
-- Fork EU et modernisation / EU fork and modernisation : **Romuald** ([romusan495](https://github.com/romusan495))
+- Fork EU et modernisation / EU fork and modernisation : **recompsmith** ([recompsmith](https://github.com/recompsmith))
   et / and **TitanFr199** ([TitanFr199](https://github.com/TitanFr199)), avec
   l'aide de / helped by Claude.
 - Noms et limites des fonctions : projet de décompilation de Dragon Quest IX

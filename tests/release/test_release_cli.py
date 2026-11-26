@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Tests for tools/release.py with a fake run(): no real git, gh or network.
 
     python -m unittest discover -s tests/release -v"""

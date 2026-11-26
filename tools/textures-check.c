@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* textures-check: looks over the HD texture pack (every textures/<name>.png
  * the game draws instead of its own, see gl_render.c) and says which ones
  * will look wrong in the game, before playing. Double-click it next to the

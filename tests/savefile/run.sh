@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 # Tests of save_file_atomic (runtime/savefile.c), the safe write of dqix.sav.
 #
 #   sh tests/savefile/run.sh

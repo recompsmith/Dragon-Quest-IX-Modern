@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The launcher's key screen (launcher/lnch_keys.c over runtime/controls.c):
  * what a key or button pressed while waiting does, and the controls.ini it
  * writes is the one the game reads. Run by tests/launcher/run.sh in a mktemp -d

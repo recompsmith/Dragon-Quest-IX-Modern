@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* hdpack_dir_rank (runtime/hdpack.c): which top folder of textures/ wins.
  * 0 the player's own packs, 1 the downloaded HD pack, 2 textures-hd's own.
  * Built and run by tests/hdpack/run.sh. */

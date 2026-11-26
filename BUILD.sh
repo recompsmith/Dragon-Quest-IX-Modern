@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 # Dragon Quest IX for PC, on Linux and the Steam Deck: turns your own DQIX ROM
 # into the PC game (BUILD.bat's twin). Run it in a terminal:
 #

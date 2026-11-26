@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """The player's Dragon Quest VII / VIII (3DS) files, as BUILD.bat finds them in
 rom/3DS: a decrypted ROM (.3ds, .cci, .cxi or .cia) or a folder already
 extracted (its romfs). Only the folders the townspeople need are copied out.

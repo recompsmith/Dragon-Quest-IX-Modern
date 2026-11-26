@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Upscale DQIX's Mobiclip movies 4x with Real-ESRGAN (realesr-animevideov3) into MPEG-1 files
 the game plays instead (runtime/hdmovie.c), plus each movie's signature file.
 

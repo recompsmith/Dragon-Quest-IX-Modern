@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """The build tools BUILD.sh needs that this Linux doesn't have, fetched into
 build/linux-tools/ for this folder only (nothing installed in the system, no
 administrator password). It is how the game builds on a Steam Deck, whose

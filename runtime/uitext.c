@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The PC interface's texts in the player's language (uitext.h).
  *
  * lang/<language>.txt, UTF-8, is a list of pairs:

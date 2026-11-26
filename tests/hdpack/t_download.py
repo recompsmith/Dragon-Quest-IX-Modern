@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Download tests of hd-pack.exe (plan Task 5), with a local HTTP server.
 
   python3 tests/hdpack/t_download.py [hd-pack.exe [t_running.exe]]

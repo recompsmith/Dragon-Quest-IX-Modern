@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Export one DQVII character (bcmdl + pack) to a simple baked file for the runtime.
 usage: npc3d_export.py <model.bcmdl> <anims.pack> <out.bin> [fps_step]
 Format (little endian):

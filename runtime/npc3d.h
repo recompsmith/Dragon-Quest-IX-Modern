@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Enhanced: townspeople in 3D (npc3d.c). The game draws its townspeople as
  * flat pictures (a sprite sheet each, facing the camera). With this on, a
  * townsperson whose type has a model in the npc3d folder is drawn as that

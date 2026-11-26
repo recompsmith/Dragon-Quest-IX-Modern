@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Trophies (trophies.h): the list, how each one is checked in the game's
  * memory, trophies.txt, the notice and the list (in-game menu > Trophies).
  *

@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Cut the HD movies (tools/upscale_movies.py) into parts under a size, at groups of pictures:
 <name>.mpg -> <name>.1.mpg, <name>.2.mpg... (the game reads either). Small ones are copied.
 

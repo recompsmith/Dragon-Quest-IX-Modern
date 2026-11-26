@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The HD pack (FatalPixels textures, SeedVR2 movies): hd-pack.exe, next to
  * the game, downloads and installs it in the background (tools/hd-pack.c);
  * the game only starts it, shows its bar (hd-pack-progress.txt) and uses the

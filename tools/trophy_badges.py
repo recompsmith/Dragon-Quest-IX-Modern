@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """The trophies' pictures (runtime/trophies.c): each trophy's badge from its
 RetroAchievements achievement (game 9093), fetched once into <out>/<key>.png on
 the player's own computer by BUILD.bat. They are the RetroAchievements
@@ -14,7 +14,7 @@ import os, re, sys, time, html, urllib.request
 
 SITE = "https://retroachievements.org/achievement/%d"
 BADGE = "https://media.retroachievements.org/Badge/%s.png"
-UA = "DQIX-Enhanced trophy pictures (+https://github.com/romusan495/Dragon-Quest-IX-Modern)"
+UA = "DQIX-Enhanced trophy pictures (+https://github.com/recompsmith/Dragon-Quest-IX-Modern)"
 
 # the trophies whose achievement is known (from the set's guide on GitHub,
 # RetroAchievements/guides: Dragon Quest IX)

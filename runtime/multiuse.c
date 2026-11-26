@@ -1,8 +1,8 @@
-/* Copyright (C) 2026 TitanFr199 (Tsu), Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 TitanFr199, recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Use several at once (multiuse.h): the item menu's "To whom?" answered with
  * A on an everyday item the party has more than one of opens a small window
  * over the game, "How many do you want to use?", then "Use 5 Seeds of
- * Strength on Tsumiko?" Yes / No; Yes uses them one after another, the game's
+ * Strength on Patty?" Yes / No; Yes uses them one after another, the game's
  * own way (its keys pressed for the player), the game's messages shown.
  *
  * All from main RAM: the field menu's object (the item under the hand, the

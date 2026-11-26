@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Journal > Progress and Journal > Vocations: the party as the game keeps it,
  * easier to read: each one's vocation and level, attributes, skill points
  * (where they went, what comes next and at how many points), and every

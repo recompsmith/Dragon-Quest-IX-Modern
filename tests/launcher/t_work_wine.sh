@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 # The launcher's work (launcher/lnch_work.c) on Windows, with
 # DQIX_LAUNCHER_HEADLESS=1 (no window) and DQIX_UPDATE_SOURCE (no network):
 #   sh tests/launcher/t_work_wine.sh <SDL2 mingw folder: include/SDL2, lib, bin/SDL2.dll>

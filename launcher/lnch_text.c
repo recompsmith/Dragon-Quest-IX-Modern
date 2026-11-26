@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The launcher's texts in the game's five languages (UTF-8). A row: the key,
  * then English, French, German, Italian, Spanish. %s / %d are filled by the
  * callers (lnch_work.c, and launcher.c's demo), in the same order in every language. */

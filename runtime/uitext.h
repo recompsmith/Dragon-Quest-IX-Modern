@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The PC interface's texts (menu bar, dialogs, messages, help) in the
  * player's language. The English text is the key: lang/<language>.txt (in
  * the game folder) gives each one its translation, and a text it doesn't

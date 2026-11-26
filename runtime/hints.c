@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 TitanFr199 (Tsu), Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 TitanFr199, recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* A button's sign as the player's own controller or keyboard shows it
  * (hints.h). Shapes are drawn from their distance to each pixel, smoothed
  * over one pixel; letters with the system font (text.c); a keyboard key in

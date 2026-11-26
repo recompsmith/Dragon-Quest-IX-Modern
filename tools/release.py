@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Release command line of Dragon Quest IX Modern (used by the release-manager
 agent). Python 3 standard library only; runs on Windows and Linux.
 
@@ -34,8 +34,8 @@ sys.path.insert(0, HERE)
 from release_lib import (bump_version_h, merged_prs, forbidden_tracked, check_notes,  # noqa: E402
                          check_announce, is_rc_tag, parse_cloud_report, NOTE_LANGS)
 
-PUBLIC_REPO = "romusan495/Dragon-Quest-IX-Modern"
-PRIVATE_REPO = "romusan495/dqix-test-prive"
+PUBLIC_REPO = "recompsmith/Dragon-Quest-IX-Modern"
+PRIVATE_REPO = "recompsmith/dqix-test-prive"
 WATCH_TIMEOUT = 15 * 60
 SIGNATURE = "\U0001F916 Generated with [Claude Code](https://claude.com/claude-code)"
 DEFAULT_ANNOUNCE_DIR = r"J:\DQIX-Passation\annonces"

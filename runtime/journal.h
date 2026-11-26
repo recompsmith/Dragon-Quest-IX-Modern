@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Modern > Journal (J, or L3 on a controller): a PC panel over the game, which
  * waits meanwhile, with a tab per page: the quests, the party's progress
  * (skills, vocations, attributes), and the pages other parts add with

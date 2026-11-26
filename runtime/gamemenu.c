@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The in-game menu (gamemenu.h): the menu bar's tree, drawn over the game in
  * the style of the game's own windows (dark blue, white rounded frame, the
  * white arrow on the chosen line), into a picture the GL renderer lays over

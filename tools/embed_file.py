@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Writes a file's bytes as a C array (the launcher's background picture, built
 into the program so it shows from the first launch, before any HD pack):
     python tools/embed_file.py launcher/art/launcher-back.jpg LAUNCHER_BACK launcher/back_jpg.c

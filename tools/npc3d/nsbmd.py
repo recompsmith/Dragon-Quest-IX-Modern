@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Nitro (Nintendo DS) NSBMD model and NSBCA skeletal animation reader, for the DQIX characters (/data/chara_sub/*.chr)."""
 import struct, numpy as np
 u8 = lambda d, o: d[o]

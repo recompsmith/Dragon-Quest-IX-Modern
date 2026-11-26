@@ -12,28 +12,28 @@ fork ; depuis le 19 octobre 2026 (sa v31), il ne reprend plus ses mises à jour.
 
 ## This fork / Ce fork (since 2026-10-19)
 
-**Romuald** ([romusan495](https://github.com/romusan495)), with
-**TitanFr199** (Tsu, Dr.Stone), helped by Claude. Each file that is entirely
+**recompsmith** ([recompsmith](https://github.com/recompsmith)), with
+**TitanFr199** (TitanFr199, helped by Claude. Each file that is entirely
 ours starts with a `Copyright (C) 2026 ...` line naming its authors; under the
 GPL, anyone reusing these files must keep it.
 
 | Feature / Fonction | Files | Authors |
 |---|---|---|
-| EU ROM support, languages (fr/de/it/es) | `tools/region.py`, `tools/rom_files.py`, `runtime/uitext.c`, `lang/` | Romuald |
-| Modern window style, in-game menu, What's new | `runtime/gamemenu.c`, `runtime/whatsnew.c`, `runtime/bootskip.c` | Romuald |
-| Map markers (monsters, gather points, chests) | `runtime/mapmarks.c` | Romuald, TitanFr199 |
-| Journal (quests, party, alchemy) | `runtime/journal*.c` | Romuald |
-| Use several items at once | `runtime/multiuse.c` | TitanFr199, Romuald |
-| Hints | `runtime/hints.c` | TitanFr199, Romuald |
-| Cheats, gold farm | `runtime/cheats.c`, `runtime/farm.c` | Romuald, TitanFr199 |
-| Trophies | `runtime/trophies.c`, `tools/trophy_badges.py` | Romuald |
-| Autosave, safe save writes | `runtime/autosave.c`, `runtime/savefile.c` | Romuald |
-| HD text, HD sprites, HD movies | `runtime/hdtext.c`, `runtime/hdsprite.h`, `runtime/hdmovie.c`, `tools/*movies*.py` | Romuald |
-| HD texture pack (build, download, install) | `runtime/hdpack.c`, `tools/hd-pack.c`, `tools/hdpack_core.h`, `tools/make_hd_pack.py`, `tools/textures-*.c` | Romuald |
-| 3D townspeople | `runtime/npc3d.c`, `tools/npc3d/` | Romuald |
-| Vocation icons | `tools/job_icons.py`, `tools/job_icons_svg/` | Romuald, TitanFr199 |
-| Launcher (install, updates, HD pack, controls) | `launcher/` | Romuald |
-| Release tooling | `tools/release.py`, `tools/release_lib.py`, `.github/workflows/` | Romuald |
+| EU ROM support, languages (fr/de/it/es) | `tools/region.py`, `tools/rom_files.py`, `runtime/uitext.c`, `lang/` | recompsmith |
+| Modern window style, in-game menu, What's new | `runtime/gamemenu.c`, `runtime/whatsnew.c`, `runtime/bootskip.c` | recompsmith |
+| Map markers (monsters, gather points, chests) | `runtime/mapmarks.c` | recompsmith, TitanFr199 |
+| Journal (quests, party, alchemy) | `runtime/journal*.c` | recompsmith |
+| Use several items at once | `runtime/multiuse.c` | TitanFr199, recompsmith |
+| Hints | `runtime/hints.c` | TitanFr199, recompsmith |
+| Cheats, gold farm | `runtime/cheats.c`, `runtime/farm.c` | recompsmith, TitanFr199 |
+| Trophies | `runtime/trophies.c`, `tools/trophy_badges.py` | recompsmith |
+| Autosave, safe save writes | `runtime/autosave.c`, `runtime/savefile.c` | recompsmith |
+| HD text, HD sprites, HD movies | `runtime/hdtext.c`, `runtime/hdsprite.h`, `runtime/hdmovie.c`, `tools/*movies*.py` | recompsmith |
+| HD texture pack (build, download, install) | `runtime/hdpack.c`, `tools/hd-pack.c`, `tools/hdpack_core.h`, `tools/make_hd_pack.py`, `tools/textures-*.c` | recompsmith |
+| 3D townspeople | `runtime/npc3d.c`, `tools/npc3d/` | recompsmith |
+| Vocation icons | `tools/job_icons.py`, `tools/job_icons_svg/` | recompsmith, TitanFr199 |
+| Launcher (install, updates, HD pack, controls) | `launcher/` | recompsmith |
+| Release tooling | `tools/release.py`, `tools/release_lib.py`, `.github/workflows/` | recompsmith |
 
 Files shared with the original code (for example `runtime/frontend_sdl.c`,
 `runtime/gl_render.c`, `runtime/gpu2d.c`, `runtime/menu_win32.c`) contain work

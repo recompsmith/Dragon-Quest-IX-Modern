@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Tests of tools/hdpack_core.h and hd-pack.exe. Run by tests/hdpack/run.sh
  * only (Linux cloud session, Wine), never on a Windows PC:
  *

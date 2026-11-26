@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The journal's Alchemy and Items pages (journal.h). Alchemy: the recipes
  * the party knows, what each needs and how many of it the party has, what
  * is missing, which ones can be made right now, and what else an item goes

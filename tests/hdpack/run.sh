@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 # Tests of hd-pack.exe (tools/hd-pack.c, tools/hdpack_core.h), download
 # tests included (tests/hdpack/t_download.py).
 #

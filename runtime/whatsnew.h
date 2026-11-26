@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* What's new: after an update, the release notes of the new version, shown
  * once at start in the journal's panel (alone), in the game's language; and
  * again from Help > What's new.

@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Minimal BCH (H3D, 3DS) reader for DQVIII models: relocation, textures, meshes, skeleton, skeletal animations."""
 import struct
 import numpy as np

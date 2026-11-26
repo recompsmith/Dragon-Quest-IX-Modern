@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* save_file_atomic (runtime/savefile.c): the save is written to <path>.tmp
  * and only then put in place, so a failed write never empties dqix.sav.
  * argv[1]: an empty folder to work in. Built and run by tests/savefile/run.sh. */

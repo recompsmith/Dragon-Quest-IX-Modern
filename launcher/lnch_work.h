@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The launcher's work before playing (lnch_work.c): a thread that checks
  * for an update, installs it, builds, and gets the HD pack, writing what the
  * screen shows into g_m (under g_m.lock). */

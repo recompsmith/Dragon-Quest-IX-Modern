@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """DQIX townsperson sprite sheets (data/ani/nNNNx.spr):
 u16 frames, 3; per frame u16 width, height, cells, 0, then per cell u16 x, y,
 width and height (8 << n) and its pixels (4 bits each, by rows); then u32

@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495), TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith, TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Cheats (the Cheats menu): Action Replay DS codes, run once a frame like
  * the cartridge does, each one turned on by its own check mark. All off
  * unless the player turns them on; never while playing with friends (every

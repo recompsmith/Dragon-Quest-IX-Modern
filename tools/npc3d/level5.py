@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Level-5's packs in DQIX (GPC2 archives, e.g. /data/pack_lv5/chara_pc.gp2) and their compression
 (the same as runtime/mapmarks.c l5_unpack / gpc_*)."""
 import struct, zlib

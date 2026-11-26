@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Modern: start like a PC game (bootskip.c). The logos (Nintendo, Square
  * Enix, Mobiclip, Level-5) run fast forward behind a black window, and
  * optionally the opening movie is skipped too, so the game opens on its own

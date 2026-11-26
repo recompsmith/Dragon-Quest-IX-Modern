@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* textures-rom: takes every 3D texture out of your own DQIX ROM into
  * textures/dump (the folder the game's "dump textures" fills while you play),
  * so textures-hd can make HD versions of the whole game at once, without

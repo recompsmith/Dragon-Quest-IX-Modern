@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The launcher's drawing on an SDL_Renderer: text (stb_truetype), rounded
  * panels with gradients (SDL_RenderGeometry), pictures (stb_image). */
 #pragma once

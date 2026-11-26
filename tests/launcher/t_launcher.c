@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Tests of the launcher's logic without a window (launcher/lnch.h).
  *   t_launcher <temp folder>      (built and run by: sh tests/launcher/run.sh)
  * Writes only inside the temp folder given as argv[1]. */
@@ -199,7 +199,7 @@ static void rom_kind_ok_extensions(void) {
     CHECK(!rom_kind_ok(""));
 }
 static void state_download_failed_modern_cannot_play(void) {
-    /* Romuald (2026-11-24): a download that broke off: Classic can play, Modern can't */
+    /* recompsmith (2026-11-24): a download that broke off: Classic can play, Modern can't */
     LState s = ready();
     s.download_failed = 1; s.online = 0; s.pack_complete = 0; s.pack = ST_SKIPPED;
     CHECK(!lstate_can_play(&s));

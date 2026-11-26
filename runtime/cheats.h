@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Cheats: Action Replay DS codes, each one turned on or off in the Cheats
  * menu (cheats.c). All off unless the player turns them on. */
 #pragma once

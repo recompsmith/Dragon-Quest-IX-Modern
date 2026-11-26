@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* textures-hd: makes HD versions (textures/hd) of the textures the game dumped
  * (textures/dump) that don't have one yet, with Real-ESRGAN. The game starts it
  * when it starts (to finish one cut short) and when it closes after dumping new
@@ -19,7 +19,7 @@
  *   either: Real-ESRGAN turns their few pixels into flat smudges in the wrong
  *   colours (the monsters walking on the map), and the game enlarges them with
  *   xBR instead (gl_render.c PACK_MIN_TEXELS, the same limit);
- * - Real-ESRGAN's picture is used as it is (smooth and painted, Romuald's
+ * - Real-ESRGAN's picture is used as it is (smooth and painted, recompsmith's
  *   choice); TEXHD_SHARP=<0..100> mixes in that % of a sharp (Lanczos)
  *   enlargement of the original instead, which keeps the pixels' grain
  *   (50 = the earlier "method 5").

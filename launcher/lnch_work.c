@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* See lnch_work.h. Paths are relative to the game folder (the launcher's
  * own, where main() goes first); the project is the folder above it.
  * Order (spec): check for an update, install it and build, then the HD pack.

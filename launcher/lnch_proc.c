@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The tools the launcher runs (BUILD.bat / BUILD.sh, hd-pack.exe): no window,
  * stdout and stderr read line by line without blocking the screen. See lnch.h. */
 #include <stdio.h>

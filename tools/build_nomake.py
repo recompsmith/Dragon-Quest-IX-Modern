@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """build.mk without make, for a Linux that has no make (SteamOS on the Steam
 Deck). tools/build-game.sh runs it with the same VAR=value arguments it gives
 make; only the Linux SDL build (the game and dqixcore.so) is done here.

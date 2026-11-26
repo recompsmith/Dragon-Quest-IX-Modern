@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Make the townspeople's 3D models for the game (runtime/npc3d.c).
 
 usage: make_all.py <DQVII romfs (or its CHARACTER folder) | -> <DQVIII romfs (or its data/Model/npc folder) | -> <game npc3d folder> [DQIX ROM]

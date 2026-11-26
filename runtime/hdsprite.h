@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* HD sprites (Enhanced, OpenGL): a sprite whose picture is in the HD texture
  * pack (textures/<name>.png, gl_render.c) is left out of the 2D picture and
  * listed here; the GL renderer draws the HD picture over it at full

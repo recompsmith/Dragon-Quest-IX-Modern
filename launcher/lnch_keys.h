@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The launcher's key screen: the game's own controls (runtime/controls.c), so
  * the controls.ini it writes is the one the game reads, before the game ever ran. */
 #pragma once

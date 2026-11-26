@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495), TitanFr199 (Tsu). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith, TitanFr199. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Modern: markers on the map (Modern > Map markers). The top screen's map
  * gets a mark for every chest, pot, barrel and bookshelf of the place the
  * party is in (chests grey once emptied) and a bubble over everyone with a
@@ -1133,7 +1133,7 @@ static void draw_mark(const Mark* m, int hover) {
     if (b->kind == K_QUEST) a = m->opened == 3 ? 0.6f : 1.0f;     /* opened: the quests' state there */
     /* a light halo: seen on the map's sand as on its grass */
     if (hover) rbox(cx, cy, 4.6f * R, 4.0f * R, 2.0f * R, 0xFFFFFF, 0.95f);
-    else if (b->kind != K_POT) rbox(cx, cy, 3.9f * R, 3.3f * R, 1.6f * R, 0xFFF8E0, 0.55f * a);   /* (a pot: as the legend shows it, without, Romuald's choice) */
+    else if (b->kind != K_POT) rbox(cx, cy, 3.9f * R, 3.3f * R, 1.6f * R, 0xFFF8E0, 0.55f * a);   /* (a pot: as the legend shows it, without, recompsmith's choice) */
     switch (b->kind) {
     case K_POT:
         glyph_pot(cx, cy, R, m->opened, a);

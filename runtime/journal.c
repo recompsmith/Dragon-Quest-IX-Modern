@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Modern > Journal (journal.h): a panel over the game with a tab per page.
  * The picture has the window's own pixels and the GL renderer lays it over
  * everything (gl_set_menu: the journal and the in-game menu are never open

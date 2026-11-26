@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* hd-pack.exe's pure parts: manifest, SHA-256, stored unzip, the path guard,
  * installing the pack and setting the Real-ESRGAN textures aside.
  * Included by tools/hd-pack.c and tests/hdpack/t_hdpack.c (Windows only).

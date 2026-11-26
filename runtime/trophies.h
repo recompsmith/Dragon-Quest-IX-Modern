@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Trophies: Steam-style achievements for the adventure, checked in the game's
  * memory (the Records' lists, the quests, the party), kept in trophies.txt
  * next to settings.ini, announced by a notice in the window's corner and

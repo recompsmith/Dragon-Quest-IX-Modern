@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* Reading the game's own files from the ROM (implemented in mapmarks.c,
  * shared with the journal): NitroFS paths, Level-5's GPC2 packs, their
  * script records and their texts' letter codes. Read only. */

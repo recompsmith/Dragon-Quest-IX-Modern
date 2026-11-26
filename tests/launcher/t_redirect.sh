@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 # dqix started with no arguments hands over to the launcher (runtime/exe_main.c):
 #   sh tests/launcher/t_redirect.sh <built game folder>
 # Linux cloud session only (it runs the game, under xvfb-run if no display):

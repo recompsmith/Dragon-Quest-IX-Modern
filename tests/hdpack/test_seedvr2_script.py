@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Test tools/seedvr2_movies.py with a fake SeedVR2 service (no GPU, no ROM)."""
 import os
 import struct

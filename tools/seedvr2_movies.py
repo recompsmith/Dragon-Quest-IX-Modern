@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later
 """Remake DQIX's movies in HD with SeedVR2 (the local ComfyUI service) into the files the game plays
 (runtime/hdmovie.c): <name>.mpg 1024x768 MPEG-1 + <name>.sig, cut into parts under 25 MB.
 

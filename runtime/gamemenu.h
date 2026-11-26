@@ -1,4 +1,4 @@
-/* Copyright (C) 2026 Romuald (romusan495). SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 recompsmith. SPDX-License-Identifier: GPL-3.0-or-later */
 /* The in-game menu (Esc, or the controller's PS / Xbox / Home button): every
  * setting of the menu bar, drawn over the game in the window and used with
  * the controller, the keyboard or the mouse. It lists the same tree as the
