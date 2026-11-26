@@ -90,6 +90,7 @@ void wfc_enable(int on, const char* dir) {
     g_rng = RNG_SEED;
     wfcb_free(&g_out);
     wfc_ip_reset();
+    wfc_dls_reset();
 }
 
 int wfc_enabled(void) { return g_on; }

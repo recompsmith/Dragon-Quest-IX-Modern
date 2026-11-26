@@ -202,6 +202,8 @@ int wfc_http(const uint8_t* req, size_t n, WfcBuf* out) {
         wfc_http_end(out, "ok", 2);
     } else if (!strcmp(method, "POST") && !strcmp(path, "/ac")) {
         nas(form, out);
+    } else if (!strcmp(method, "POST") && !strcmp(path, "/download")) {
+        wfc_dls(form, out);
     } else {
         wfc_log("%s %s: not handled", method, path);
         wfc_http_head(out, "404 Not Found", "text/plain");

@@ -50,6 +50,7 @@ void wfc_http_end(WfcBuf* b, const void* body, size_t n);   /* Content-Length, C
 
 /* wfc_dls.c: POST /download */
 void wfc_dls(const char* form, WfcBuf* out);
+void wfc_dls_reset(void);
 
 /* nossl.c */
 void wfc_nossl(void);
