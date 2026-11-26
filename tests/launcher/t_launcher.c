@@ -62,7 +62,7 @@ static void settings_update_new_file_has_version(void) {
     remove(p);
     CHECK(settings_update(p, "mode", "classic") == 1);      /* a new file: the game must not read it as a legacy one */
     char* t = NULL;
-    CHECK(ini_load(p, &t) == 1 && !strcmp(t, "settings_version = 4\nmode = classic\n"));
+    CHECK(ini_load(p, &t) == 1 && !strcmp(t, "settings_version = 5\nmode = classic\n"));
     free(t);
 }
 static void settings_update_keeps_others(void) {

@@ -100,7 +100,7 @@ int settings_update(const char* path, const char* key, const char* value) {
     char* t;
     int r = ini_load(path, &t);
     if (r < 0) { free(t); return 0; }
-    if (r == 0) { free(t); t = strdup("settings_version = 4\n"); if (!t) return 0; }   /* runtime/frontend_sdl.c SETTINGS_VERSION */
+    if (r == 0) { free(t); t = strdup("settings_version = 5\n"); if (!t) return 0; }   /* runtime/frontend_sdl.c SETTINGS_VERSION */
     char* n = ini_set(t, key, value);
     int ok = n && ini_save(path, n);
     free(n); free(t);
