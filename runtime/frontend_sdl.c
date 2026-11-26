@@ -62,6 +62,7 @@
 #include <windows.h>
 #else
 #include <unistd.h>
+#include <poll.h>
 #endif
 
 #define DS_FPS 59.8261
@@ -2383,6 +2384,11 @@ static void caract_pieces(GlPresent* v) {
  * 4. The Nintendo Wi-Fi Connection settings: the system's two screens side by
  *    side over the title's picture. */
 static int g_save_slot = 1;                                       /* Game > Saves: the save slot played (1..SAVE_SLOTS; card.c backup_use_slot) */
+static int g_restarting;                                          /* restart_with() at work: the old window fading out, waiting for the new one */
+static int g_restart_skip;                                        /* ...for a save slot: the new one opens on the title's menu (bootskip) */
+static volatile int g_out_gain = 100;                             /* the sound, in % (faded out with the picture) */
+static char g_handover[64];                                       /* started by restart_with(): how to tell the old one we are on screen */
+static int switch_slot(int n);
 static char g_save_name[SAVE_SLOTS + 1][48];                      /* ...each one's name ("": "Adventure <N>") */
 static void restart_with(const char* session);
 static void settings_save(void);
@@ -2506,6 +2512,8 @@ static void title_update(int a_on_top) {
         else g_title_hand[i][2] = 0;
     }
     if (!phase && n && title_art_like(top, 0)) phase = 2;         /* the menu again (back from a screen of its own) */
+    if (!phase && n && g_bootskip_title) phase = 2;               /* the menu straight after the logos and movie run unseen (Modern > Start, another save slot) */
+    if (n) g_bootskip_title = 0;
     {                                                             /* the Wi-Fi settings (only from the title): both screens side by side over the title's picture */
         static int seen;                                          /* (the title seen: not the warnings, light grey too, at the start) */
         if (phase) seen = 1;
@@ -2679,9 +2687,9 @@ static void title_pieces(GlPresent* v) {
  * which (its name, three dots); no log (an empty slot): a small window of ours */
 #define SLOT_HEAD 15                                              /* (the log's heading, in the touch screen's pixels) */
 static void title_slot_keys(void) {
-    if (g_title != 2 || g_title_fade < 0.999f || session_requested()) return;
+    if (g_title != 2 || g_title_fade < 0.999f || session_requested() || g_restarting) return;
     int d = g_keys_down & (1u << 9) ? 1 : g_keys_down & (1u << 8) ? -1 : 0;   /* (L alone goes round all: many players have no R key) */
-    if (d && !backup_busy()) { g_save_slot = (g_save_slot - 1 + d + SAVE_SLOTS) % SAVE_SLOTS + 1; restart_with(NULL); }
+    if (d && !backup_busy()) switch_slot((g_save_slot - 1 + d + SAVE_SLOTS) % SAVE_SLOTS + 1);
     if ((g_keys_down & (1u << 10)) && g_win) {
         char* t = ask_text(g_win, T("Rename this save"), T("Name of this save:"));
         if (t && t[0]) { snprintf(g_save_name[g_save_slot], sizeof g_save_name[0], "%s", t); settings_save(); }
@@ -4036,7 +4044,7 @@ static void audio_cb(void* u, Uint8* stream, int len) {
         g_audio_priming = 1;
     }
     trophies_mix(out, frames);                            /* a trophy's chime, at the game's volume */
-    int v = g_mute ? 0 : g_volume;                        /* Game > Volume: by ear (loudness follows the square) */
+    int v = g_mute ? 0 : g_volume * g_out_gain / 100;     /* Game > Volume: by ear (loudness follows the square) */
     if (v < 100) {
         int32_t gain = v * v * 65536 / 10000;               /* 16.16 */
         for (uint32_t i = 0; i < frames * 2; i++) out[i] = (int16_t)(((int32_t)out[i] * gain) >> 16);
@@ -4085,7 +4093,7 @@ static int try_gl(void) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     g_win = SDL_CreateWindow("Dragon Quest IX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * g_scale, 384 * g_scale,
-                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+                             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (g_handover[0] ? SDL_WINDOW_HIDDEN : 0));
     if (!g_win) return 0;
     g_glctx = SDL_GL_CreateContext(g_win);
     if (!g_glctx) { fprintf(stderr, "OpenGL 3.3 not available (%s): using the software renderer\n", SDL_GetError()); SDL_DestroyWindow(g_win); g_win = NULL; return 0; }
@@ -4268,6 +4276,15 @@ void frontend_init(int argc, char** argv) {
     g_report_window = report_window;
     g_headless = getenv("DQIX_NOWINDOW") != NULL;
     if (getenv("DQIX_HIDDEN")) { g_hidden = g_headless = 1; return; }
+    {   /* started again by restart_with(): its handover, read once (not passed on to a later start) */
+        const char* h = getenv("DQIX_HANDOVER");
+        if (h && *h && !g_headless) snprintf(g_handover, sizeof g_handover, "%s", h);
+#ifdef _WIN32
+        SetEnvironmentVariableA("DQIX_HANDOVER", NULL);
+#else
+        unsetenv("DQIX_HANDOVER");
+#endif
+    }
     g_analog_walk = 1;                                          /* Modern: walking with the stick is on unless turned off */
     g_save_backups = 1;                                         /* Game > Keep a copy of every save: on unless turned off */
     skins_scan();
@@ -4283,7 +4300,14 @@ void frontend_init(int argc, char** argv) {
     if (g_opt.dlc) backup_unlock_dlc();                        /* before the game reads the save */
     if (getenv("DQIX_MODE")) g_classic = strcmp(getenv("DQIX_MODE"), "enhanced") != 0;   /* tests */
     /* Modern > Start: not in a session (every console starts alike) nor a replay (its inputs hold the presses) */
+    int switched = getenv("DQIX_SWITCH_SKIP") && !getenv("DQIX_SESSION");   /* another save slot (restart_with): straight to the title's menu */
+#ifdef _WIN32
+    SetEnvironmentVariableA("DQIX_SWITCH_SKIP", NULL);
+#else
+    unsetenv("DQIX_SWITCH_SKIP");
+#endif
     if (getenv("DQIX_SKIP_INTRO")) bootskip_start(atoi(getenv("DQIX_SKIP_INTRO")));   /* tests */
+    else if (switched) bootskip_start(BOOTSKIP_MOVIE);
     else bootskip_start(getenv("DQIX_SESSION") || getenv("DQIX_INPUT") || getenv("DQIX_INPUT_FILE") ? BOOTSKIP_OFF : g_skip_intro);
     /* real pixels on high-DPI Windows setups (not stretched by the system), so
      * the pixel grid and actual size are drawn on the monitor's own pixels */
@@ -4304,7 +4328,7 @@ void frontend_init(int argc, char** argv) {
         if (sc) { g_scale = atoi(sc); if (g_scale < 1) g_scale = 1; if (g_scale > 8) g_scale = 8; }
         if (!try_gl()) {
             g_win = SDL_CreateWindow("Dragon Quest IX", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 256 * g_scale, 384 * g_scale,
-                                     SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+                                     SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | (g_handover[0] ? SDL_WINDOW_HIDDEN : 0));
             if (!g_win) { fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError()); exit(1); }
             g_ren = SDL_CreateRenderer(g_win, -1, SDL_RENDERER_ACCELERATED);
             if (!g_ren) g_ren = SDL_CreateRenderer(g_win, -1, SDL_RENDERER_SOFTWARE);
@@ -4312,7 +4336,7 @@ void frontend_init(int argc, char** argv) {
             g_tex = SDL_CreateTexture(g_ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 256, 384);
         }
         window_icon();
-        {   /* started again by the program itself (reset, sessions): the window where it was */
+        {   /* started again by the program itself (reset, sessions): the window where it was (an older version: DQIX_WINPOS) */
             const char* wp = getenv("DQIX_WINPOS"); int x, y;
             if (wp && sscanf(wp, "%d,%d", &x, &y) == 2) SDL_SetWindowPosition(g_win, x, y);
         }
@@ -4323,6 +4347,18 @@ void frontend_init(int argc, char** argv) {
         update_actual();
         menu_sync();
         layout_window();
+        {   /* started again by restart_with(): the old window's place and size, as the player left it */
+            const char* g = getenv("DQIX_WINGEOM"); int x, y, w, h, mx;
+            if (g && sscanf(g, "%d,%d,%d,%d,%d", &x, &y, &w, &h, &mx) == 5 && !g_fullscreen && w >= 64 && h >= 64) {
+                SDL_SetWindowSize(g_win, w, h); SDL_SetWindowPosition(g_win, x, y);
+                if (mx) SDL_MaximizeWindow(g_win);
+            }
+#ifdef _WIN32
+            SetEnvironmentVariableA("DQIX_WINGEOM", NULL);
+#else
+            unsetenv("DQIX_WINGEOM");
+#endif
+        }
         if (g_fullscreen) { menu_show(0); window_fullscreen(g_win, &g_bl_main, 1); }
         second_window_sync();
         atexit(settings_save);
@@ -6445,32 +6481,130 @@ static const char SESSION_HELP[] =
     "does, the host's game also shows an address that connects directly, with a little less delay. "
     "Windows may ask whether to allow the game on networks: allow it.";
 
-/* start this program again, in a session or not (the save is written first) */
+/* Starting again (a save slot, a session) without it showing: the window
+ * fades to black with the sound, the new program opens its window hidden
+ * where this one is, the same size (DQIX_WINGEOM), shows it once it has drawn
+ * black and says so (DQIX_HANDOVER: an event on Windows, a pipe elsewhere);
+ * only then does this one go. For a slot the new one opens on the title's
+ * menu (bootskip). */
+static void switch_fade_frame(float a) {
+    if (!g_gl || !g_win || g_headless) return;
+    int w, h; SDL_GL_GetDrawableSize(g_win, &w, &h);
+    if (w <= 0 || h <= 0) return;
+    GlPresent v; canvas_layout(&v, w, h); v.again = 1;
+    if (v.npiece >= GL_MAX_PIECES) v.npiece = GL_MAX_PIECES - 1;
+    float* q = bestiary_piece(&v, 0, 0, 0, 1, 1, 46, 0, 0, 1);  /* (46: black, its alpha) */
+    set_rect(q, 0, 0, v.cw, v.ch); q[5] = a; q[6] = 0;
+    v.fade_last = 1;
+    gl_present(&v);
+    SDL_GL_SwapWindow(g_win);
+}
+static void switch_wait_frame(void) {                         /* waiting for the new window: black, still answering Windows */
+    SDL_Event e; while (SDL_PollEvent(&e)) { }
+    switch_fade_frame(1);
+    SDL_Delay(16);
+}
+
+/* start this program again, in a session or not (the save is written first);
+ * returns only if that failed (this one then goes on) */
 static void restart_with(const char* session) {
+    if (g_restarting) return;
+    g_restarting = 1;
     backup_flush();
     settings_save();
-    char pos[48] = "";                                           /* the new window where this one is */
-    if (g_win && !g_fullscreen) { int x, y; SDL_GetWindowPosition(g_win, &x, &y); snprintf(pos, sizeof pos, "%d,%d", x, y); }
+    char geom[96] = "";                                          /* the new window where this one is, its size */
+    if (g_win && !g_fullscreen) {
+        int x, y, w, h, mx = (SDL_GetWindowFlags(g_win) & SDL_WINDOW_MAXIMIZED) != 0;
+        SDL_GetWindowPosition(g_win, &x, &y); SDL_GetWindowSize(g_win, &w, &h);
+        snprintf(geom, sizeof geom, "%d,%d,%d,%d,%d", x, y, w, h, mx);
+    }
+    for (int i = 1; i <= 15; i++) { g_out_gain = 100 - i * 100 / 15; switch_fade_frame(i / 15.0f); SDL_Delay(16); }   /* (a quarter of a second) */
 #ifdef _WIN32
-    SetEnvironmentVariableA("DQIX_WINPOS", pos[0] ? pos : NULL);
+    SetEnvironmentVariableA("DQIX_WINPOS", NULL);
+    SetEnvironmentVariableA("DQIX_WINGEOM", geom[0] ? geom : NULL);
     SetEnvironmentVariableA("DQIX_SESSION", session);
     SetEnvironmentVariableA("DQIX_PLAYER_NAME", g_player_name[0] ? g_player_name : NULL);
+    SetEnvironmentVariableA("DQIX_SWITCH_SKIP", g_restart_skip ? "1" : NULL);
+    char evname[64]; snprintf(evname, sizeof evname, "Local\\dqix-handover-%lu-%lu", (unsigned long)GetCurrentProcessId(), (unsigned long)GetTickCount());
+    HANDLE ev = g_win ? CreateEventA(NULL, TRUE, FALSE, evname) : NULL;
+    SetEnvironmentVariableA("DQIX_HANDOVER", ev ? evname : NULL);
     STARTUPINFOW si; memset(&si, 0, sizeof si); si.cb = sizeof si;
     PROCESS_INFORMATION pi;
     wchar_t* cmd = _wcsdup(GetCommandLineW());
     DWORD flags = GetConsoleWindow() ? 0 : CREATE_NO_WINDOW;   /* started without a console (dqix.exe double-clicked): stay without */
     if (CreateProcessW(NULL, cmd, NULL, NULL, FALSE, flags, NULL, NULL, &si, &pi)) {
-        CloseHandle(pi.hThread); CloseHandle(pi.hProcess);
-        exit(0);
-    }
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Dragon Quest IX", T("The game couldn't start again by itself. Close it and start it again."), g_win);
+        CloseHandle(pi.hThread);
+        int died = 0;
+        if (ev) for (int t = 0; t < 1800; t++) {                 /* (30 s at most: then it is on its way anyway) */
+            HANDLE hs[2] = { ev, pi.hProcess };
+            DWORD r = WaitForMultipleObjects(2, hs, FALSE, 0);
+            if (r == WAIT_OBJECT_0) break;
+            if (r == WAIT_OBJECT_0 + 1) { died = 1; break; }
+            switch_wait_frame();
+        }
+        CloseHandle(pi.hProcess);
+        if (ev) CloseHandle(ev);
+        if (!died) { fflush(NULL); _exit(0); }                    /* (the save and settings are written; the new one has the log) */
+    } else if (ev) CloseHandle(ev);
+    free(cmd);
 #else
-    if (pos[0]) setenv("DQIX_WINPOS", pos, 1); else unsetenv("DQIX_WINPOS");
+    if (geom[0]) setenv("DQIX_WINGEOM", geom, 1); else unsetenv("DQIX_WINGEOM");
+    unsetenv("DQIX_WINPOS");
     if (session) setenv("DQIX_SESSION", session, 1); else unsetenv("DQIX_SESSION");
     if (g_player_name[0]) setenv("DQIX_PLAYER_NAME", g_player_name, 1);
+    if (g_restart_skip) setenv("DQIX_SWITCH_SKIP", "1", 1); else unsetenv("DQIX_SWITCH_SKIP");
     extern char** g_argv;
-    execv("/proc/self/exe", g_argv);
+    int fds[2] = { -1, -1 };
+    if (g_win && pipe(fds) == 0) { char b[16]; snprintf(b, sizeof b, "%d", fds[1]); setenv("DQIX_HANDOVER", b, 1); }
+    else unsetenv("DQIX_HANDOVER");
+    fflush(NULL);
+    pid_t pid = fds[0] >= 0 ? fork() : -1;
+    if (pid == 0) { close(fds[0]); execv("/proc/self/exe", g_argv); _exit(127); }
+    if (pid > 0) {
+        close(fds[1]);
+        int died = 0;
+        for (int t = 0; t < 1800; t++) {
+            struct pollfd pf = { fds[0], POLLIN, 0 };
+            if (poll(&pf, 1, 0) > 0) { char c; died = read(fds[0], &c, 1) != 1; break; }   /* (a byte: on screen; closed without: it ended) */
+            switch_wait_frame();
+        }
+        close(fds[0]);
+        if (!died) _exit(0);
+    } else {                                                      /* no handover: in place, as before */
+        if (fds[0] >= 0) { close(fds[0]); close(fds[1]); }
+        unsetenv("DQIX_HANDOVER");
+        execv("/proc/self/exe", g_argv);
+    }
 #endif
+    g_out_gain = 100;
+    g_restarting = 0;
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Dragon Quest IX", T("The game couldn't start again by itself. Close it and start it again."), g_win);
+}
+
+/* the new program, on screen: show the window (made hidden, black) and tell the old one */
+static void handover_ready(void) {
+    if (!g_handover[0]) return;
+    if (g_win) SDL_ShowWindow(g_win);
+#ifdef _WIN32
+    HANDLE ev = OpenEventA(EVENT_MODIFY_STATE, FALSE, g_handover);
+    if (ev) { SetEvent(ev); CloseHandle(ev); }
+#else
+    int fd = atoi(g_handover);
+    if (fd > 2) { if (write(fd, "1", 1) != 1) { } close(fd); }
+#endif
+    g_handover[0] = 0;
+}
+
+/* Game > Saves, L on the title: play another slot (the game starts again on
+ * it, unseen); 0 if it couldn't (the slot played stays) */
+static int switch_slot(int n) {
+    if (n < 1 || n > SAVE_SLOTS || n == g_save_slot) return 0;
+    int was = g_save_slot;
+    g_save_slot = n; g_restart_skip = 1;
+    restart_with(NULL);                                          /* (back only if it failed) */
+    g_restart_skip = 0;
+    g_save_slot = was; settings_save();
+    return 0;
 }
 
 static int choose(const char* title, const char* text, const char* const* buttons, int n, int def, int cancel);
@@ -7037,7 +7171,7 @@ static void do_action(int id) {
         if (backup_busy()) { SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, T("Saves"), T("The game is saving: try again in a moment."), g_win); break; }
         char name[48], text[400];
         snprintf(text, sizeof text, T("Switch to %s? The game restarts on that save.\n\nAnything since you last saved in the game is lost."), save_slot_name(n, name, sizeof name));
-        if (ask_yes(T("Saves"), text, T("Switch"))) { g_save_slot = n; restart_with(NULL); }
+        if (ask_yes(T("Saves"), text, T("Switch"))) switch_slot(n);
         break;
     }
     case MI_SLOT_RENAME: {
@@ -7704,7 +7838,7 @@ void frontend_frame(void) {
         if (gamemenu_is_open() || journal_open()) g_fe_keys = 0;              /* the menu has the buttons (in a session the game goes on) */
         uint64_t tp = SDL_GetPerformanceCounter();
         static int shown;                                     /* Modern > Start: the logos run unseen (the window stays as first drawn: black) */
-        if (!shown || !bootskip_active()) { present(); shown = 1; }
+        if (!shown || !bootskip_active()) { present(); if (!shown) { handover_ready(); if (g_win) present(); } shown = 1; }
         pr->present = (float)ticks_ms(SDL_GetPerformanceCounter() - tp);
         if (g_farm_stopped) {                                 /* Modern > Farm gold: it stopped by itself: pause and say why */
             g_farm_stopped = 0;

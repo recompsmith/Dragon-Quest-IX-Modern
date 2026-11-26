@@ -18,6 +18,7 @@
 #define GIVE_UP     4000         /* never skip longer than this (about a minute of DS time) */
 
 static int g_mode, g_on;
+int g_bootskip_title;                     /* it ended on the game's first screen (the frontend's title then knows its menu) */
 static uint32_t g_movie[2], g_title[2];   /* where those files are in the ROM */
 static int g_movie_seen, g_title_seen;
 static uint64_t g_end;
@@ -73,7 +74,7 @@ static void stop(const char* why) {
 int bootskip_active(void) {
     if (!g_on) return 0;
     if (g_frame >= GIVE_UP) stop("gave up skipping");
-    else if (g_end && g_frame >= g_end) stop("the game's first screen");
+    else if (g_end && g_frame >= g_end) { stop("the game's first screen"); g_bootskip_title = 1; }
     return g_on;
 }
 

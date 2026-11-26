@@ -13,3 +13,4 @@ void bootskip_start(int mode);       /* at launch (not in sessions or replays): 
 int bootskip_active(void);           /* skipping now: the frontend fast-forwards and shows nothing */
 uint16_t bootskip_keys(void);        /* input.c, every frame: the buttons it presses */
 void bootskip_card_read(uint32_t addr);   /* card.c: the game reads the ROM there */
+extern int g_bootskip_title;              /* set when it ended on the game's first screen (the title's menu: frontend_sdl.c takes it) */

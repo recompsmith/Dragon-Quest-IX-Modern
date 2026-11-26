@@ -270,14 +270,17 @@ static int hp_mkdir(const wchar_t* root, const wchar_t* dir) {
     if (hp_list_add(&hp_made_dirs, dir)) { RemoveDirectoryW(dir); hp_log("  out of memory\n"); return -1; }   /* just made, empty */
     return 0;
 }
+/* the game may be reading a small file of ours this very moment: try again a few times */
+static int hp_busy(void) { DWORD e = GetLastError(); return e == ERROR_SHARING_VIOLATION || e == ERROR_LOCK_VIOLATION || e == ERROR_ACCESS_DENIED; }
 /* rename, same volume, never replacing anything */
 static int hp_move(const wchar_t* game, const wchar_t* from, const wchar_t* to) {
     if (!hp_safe_path(game, from) || !hp_safe_path(game, to)) { hp_log("  refused (unsafe path): move %s -> %s\n", hp_u8(from), hp_u8(to)); return -1; }
-    if (!MoveFileExW(from, to, MOVEFILE_WRITE_THROUGH)) { hp_log("  can't move %s -> %s (error %lu)\n", hp_u8(from), hp_u8(to), GetLastError()); return -1; }
+    for (int t = 0; !MoveFileExW(from, to, MOVEFILE_WRITE_THROUGH); t++) {   /* (an antivirus scanning it, the game closing: up to 10 s) */
+        if (t >= 100 || !hp_busy()) { hp_log("  can't move %s -> %s (error %lu)\n", hp_u8(from), hp_u8(to), GetLastError()); return -1; }
+        Sleep(100);
+    }
     return 0;
 }
-/* the game may be reading a small file of ours this very moment: try again a few times */
-static int hp_busy(void) { DWORD e = GetLastError(); return e == ERROR_SHARING_VIOLATION || e == ERROR_LOCK_VIOLATION || e == ERROR_ACCESS_DENIED; }
 /* delete one file this program wrote, by exact name; a missing file is fine */
 static int hp_delete_own(const wchar_t* root, const wchar_t* file) {
     DWORD a;

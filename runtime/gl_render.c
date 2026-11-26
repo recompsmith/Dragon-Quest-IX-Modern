@@ -238,6 +238,7 @@ static const char* FS_POST =
     "uniform int u_fogoff; uniform int u_fogshift; uniform int u_wbuf;\n"
     "uniform float u_ao; uniform float u_aorad;\n"                    /* soft shadows: strength (0 off), reach in pixels */
     "uniform float u_ink; uniform int u_inkstep; uniform float u_inkmin; uniform sampler2D u_odepth; uniform sampler2D u_ocolor;\n"   /* thin dark lines round things: strength (0 off), width, how far behind */
+    "uniform int u_crack;\n"                                          /* the cracks between pieces of the scenery filled (above 1x) */
     /* Soft shadows in corners and under things: a pixel whose neighbours are
      * nearer than itself on both sides, along a line through it, sits in a
      * hollow (where a wall meets the floor, under a counter, behind a pot)
@@ -257,6 +258,28 @@ static const char* FS_POST =
     "    s += clamp(min(d1, d2), 0.0, 0.02) * (1.0 - smoothstep(0.02, 0.06, max(d1, d2))); n += 1.0;\n"   /* (much nearer: another object) */
     "  }\n"
     "  return n > 0.0 ? clamp(s / (n * 0.02), 0.0, 1.0) : 0.0;\n"
+    "}\n"
+    /* Cracks: two pieces of the scenery that meet on the DS (a mountain's
+     * slopes, the ground's tiles) can leave a gap of a pixel or two between
+     * them once drawn larger than 256 x 192: what is far behind shows through
+     * (a dark or blue line), and the outlines mark it. Such a pixel, farther
+     * than both its neighbours along a line, those two at one depth, takes
+     * their colour (and their depth for the outlines). A flat surface at any
+     * angle never has a pixel farther than both its neighbours. */
+    "bool crack(ivec2 p, out ivec2 src) {\n"
+    "  src = p; if (u_crack == 0) return false;\n"
+    "  ivec2 sz = textureSize(u_depth, 0);\n"
+    "  bool drawn = texelFetch(u_attr, p, 0).a > 0.5; float c0 = drawn ? invw(p) : 0.0;\n"
+    "  for (int k = 0; k < 6; k++) {\n"
+    "    ivec2 dir = k < 3 ? ivec2(1, 0) : ivec2(0, 1); int m = k % 3;\n"
+    "    ivec2 a = p - dir * (m == 2 ? 2 : 1), b = p + dir * (m == 1 ? 2 : 1);\n"   /* a gap of 1, or 2 (this pixel either one) */
+    "    if (any(lessThan(a, ivec2(0))) || any(greaterThanEqual(b, sz))) continue;\n"
+    "    if (texelFetch(u_attr, a, 0).a < 0.5 || texelFetch(u_attr, b, 0).a < 0.5) continue;\n"
+    "    float da = invw(a), db = invw(b);\n"
+    "    if (abs(da - db) > 0.01 * max(da, db) || (drawn && c0 > min(da, db) * 0.99)) continue;\n"
+    "    src = a; return true;\n"
+    "  }\n"
+    "  return false;\n"
     "}\n"
     /* Thin dark lines round things: a pixel just behind the edge of something
      * nearer (a pot before the wall, a tree's leaves before the sky...) is
@@ -282,17 +305,19 @@ static const char* FS_POST =
     "}\n"
     "void main() {\n"
     "  ivec2 p = ivec2(gl_FragCoord.xy);\n"
-    "  vec4 c = texelFetch(u_color, p, 0); vec4 at = texelFetch(u_attr, p, 0);\n"
+    "  vec4 c = texelFetch(u_color, p, 0); vec4 at = texelFetch(u_attr, p, 0); float dp = texelFetch(u_depth, p, 0).r;\n"
+    "  ivec2 cs; if (crack(p, cs)) { ivec2 cb = 2 * p - cs; c = texelFetch(u_color, cs, 0); if (cb.x >= 0 && cb.y >= 0) c = mix(c, texelFetch(u_color, min(cb, textureSize(u_color, 0) - 1), 0), 0.5); at = texelFetch(u_attr, cs, 0); dp = texelFetch(u_depth, cs, 0).r; }\n"
     "  if (u_ao > 0.0 && at.a > 0.5 && c.a > 0.0) c.rgb *= 1.0 - u_ao * hollow(p);\n"
     "  if (u_ink > 0.0 && at.a > 0.5 && c.a > 0.0) c.rgb *= 1.0 - u_ink * ink(p);\n"
     "  if (u_edge != 0 && at.b > 0.5 && at.a > 0.5) {\n"
-    "    float id = at.r; float d = texelFetch(u_depth, p, 0).r;\n"
+    "    float id = at.r; float d = dp;\n"
     "    ivec2 sz = textureSize(u_color, 0);\n"
     "    ivec2 o[4] = ivec2[4](ivec2(-u_estep, 0), ivec2(u_estep, 0), ivec2(0, -u_estep), ivec2(0, u_estep));\n"
     "    for (int k = 0; k < 4; k++) {\n"
     "      ivec2 q = p + o[k];\n"
     "      if (q.x < 0 || q.y < 0 || q.x >= sz.x || q.y >= sz.y) continue;\n"
-    "      vec4 an = texelFetch(u_attr, q, 0);\n"
+    "      vec4 an = texelFetch(u_attr, q, 0); ivec2 qs;\n"
+    "      if (crack(q, qs)) continue;\n"                                  /* (a crack beside it: no outline along it) */
     "      if (abs(an.r - id) > 0.004 && d < texelFetch(u_depth, q, 0).r) { int i = int(id * 63.0 + 0.5) >> 3;\n"
     /* with anti-aliasing on, the DS blends a marked edge half and half with what is behind it
      * (the soft outlines of DQIX's characters); the farther neighbour stands in for that */
@@ -302,7 +327,7 @@ static const char* FS_POST =
     "    }\n"
     "  }\n"
     "  if (u_fog != 0 && at.g > 0.5) {\n"
-    "    float d = texelFetch(u_depth, p, 0).r;\n"
+    "    float d = dp;\n"
     "    int z15 = u_wbuf != 0 ? int(d * 4096.0 * 4096.0) >> 9 : int(d * 16777215.0) >> 9;\n"
     "    int step = 0x400 >> u_fogshift; float dens;\n"
     "    if (step <= 0) dens = u_fogtab[31];\n"
@@ -2168,6 +2193,8 @@ static void gl_render_(const Frame3D* f) {
     { static int eb = -2; if (eb == -2) eb = getenv("DQIX_EDGEBLEND") ? atoi(getenv("DQIX_EDGEBLEND")) : -1;
       p_glUniform1i(p_glGetUniformLocation(prog_post, "u_aa"), (eb < 0 ? g_scale == 1 : eb) && ((disp3d >> 4) & 1)); }
     p_glUniform1i(p_glGetUniformLocation(prog_post, "u_scale"), g_scale);
+    { static int ck = -2; if (ck == -2) ck = getenv("DQIX_CRACKS") ? atoi(getenv("DQIX_CRACKS")) : 1;   /* tests: 0 leaves them */
+      p_glUniform1i(p_glGetUniformLocation(prog_post, "u_crack"), ck && g_scale > 1); }
     float ec[24];
     for (int i = 0; i < 8; i++) { uint16_t c = IO16_(0x330 + i * 2); ec[i * 3] = (float)(c & 31) / 31.0f; ec[i * 3 + 1] = (float)((c >> 5) & 31) / 31.0f; ec[i * 3 + 2] = (float)((c >> 10) & 31) / 31.0f; }
     p_glUniform3fv(p_glGetUniformLocation(prog_post, "u_edgecol"), 8, ec);
@@ -2835,13 +2862,14 @@ void gl_present(const GlPresent* v) {
         const float* bk = v->layer[GL_LAYER_BACK];
         if (overlay_on[2 + GL_LAYER_BACK] && bk[2] > 0 && bk[3] > 0) draw_overlay(v, bk, overlay_tex[2 + GL_LAYER_BACK]);
     }
-    if (v->npiece) {
+    int np = v->npiece - (v->fade_last && v->npiece > 0);         /* (the fade's piece: last, over everything) */
+    if (np) {
         const float* lg = v->layer[GL_LAYER_LOGO];
         if (overlay_on[2 + GL_LAYER_LOGO] && lg[2] > 0 && lg[3] > 0) {   /* the logo over the first piece (the window), under the rest */
             draw_pieces(v, final_tex, 0, 1);
             draw_overlay(v, lg, overlay_tex[2 + GL_LAYER_LOGO]);
-            draw_pieces(v, final_tex, 1, v->npiece);
-        } else draw_pieces(v, final_tex, 0, v->npiece);
+            draw_pieces(v, final_tex, 1, np);
+        } else draw_pieces(v, final_tex, 0, np);
     }
     draw_round(v);
     if (overlay_on[0] && v->overlay[2] > 0 && v->overlay[3] > 0) draw_overlay(v, v->overlay, overlay_tex[0]);
@@ -2849,6 +2877,7 @@ void gl_present(const GlPresent* v) {
     for (int i = 0; i < GL_LAYERS; i++)                           /* the layers, in their order (under the in-game menu) */
         if (i != GL_LAYER_LOGO && i != GL_LAYER_BACK && overlay_on[2 + i] && v->layer[i][2] > 0 && v->layer[i][3] > 0) draw_overlay(v, v->layer[i], overlay_tex[2 + i]);
     if (menu_on && !v->again) draw_menu(v);
+    if (np < v->npiece) draw_pieces(v, final_tex, np, v->npiece);
 }
 
 /* A console photo (RGBA, rows top-down), drawn around the screens. */
