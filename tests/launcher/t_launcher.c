@@ -198,7 +198,7 @@ static void rom_kind_ok_extensions(void) {
     CHECK(!rom_kind_ok(""));
 }
 static void state_download_failed_modern_cannot_play(void) {
-    /* Romuald (2026-11-24): a download that broke off: Classic can play, Modern can't */
+    /* recompsmith (2026-11-24): a download that broke off: Classic can play, Modern can't */
     LState s = ready();
     s.download_failed = 1; s.online = 0; s.pack_complete = 0; s.pack = ST_SKIPPED;
     CHECK(!lstate_can_play(&s));

@@ -4,7 +4,7 @@
  * one more row under Use: "Use several". Chosen (with A, a touch or the
  * mouse), the game asks "To whom?" as for Use; the companion chosen, a small
  * window opens beside it, "How many?", then "Use 5 Seeds of Strength on
- * Tsumiko?" Yes / No; Yes uses one the game's own way (its keys pressed for
+ * Patty?" Yes / No; Yes uses one the game's own way (its keys pressed for
  * the player). Its effect is then the game's own, once for each one chosen
  * (a seed's gain, HP or MP healed: those functions hooked), added up in the
  * one message ("Strength goes up by 100", "recovers 120 HP"), the others
