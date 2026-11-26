@@ -40,7 +40,7 @@
 #include <winhttp.h>
 
 /* a new pack = a new release and a new address in a new version of the game */
-#define HD_PACK_URL L"https://github.com/romusan495/Dragon-Quest-IX-Modern/releases/download/hd-pack-1/"
+#define HD_PACK_URL L"https://github.com/recompsmith/Dragon-Quest-IX-Modern/releases/download/hd-pack-1/"
 
 #define MAX_ZIPS 64
 #define MANIFEST_MAX (64 * 1024)

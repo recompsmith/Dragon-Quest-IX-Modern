@@ -29,7 +29,7 @@
 #endif
 
 #define DISCORD_URL "https://discord.gg/z9X9PH8AH4"
-#define REPO_URL    "https://github.com/romusan495/Dragon-Quest-IX-Modern"
+#define REPO_URL    "https://github.com/recompsmith/Dragon-Quest-IX-Modern"
 static const char* const LANGUAGE_KEY[6] = {"", "english", "french", "german", "italian", "spanish"};
 static const char* const NOTES_LANG[6] = {"", "", "fr", "de", "it", "es"};
 
