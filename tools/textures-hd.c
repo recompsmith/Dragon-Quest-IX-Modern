@@ -14,7 +14,7 @@
  * - textures with nothing to draw (all see-through, or one colour) get no HD
  *   version: the game's own draws the same, and a blank one in the pack can
  *   stand in for a texture the game fills in later (dialogue letters);
- * - Real-ESRGAN's picture is used as it is (smooth and painted, Romuald's
+ * - Real-ESRGAN's picture is used as it is (smooth and painted, recompsmith's
  *   choice); TEXHD_SHARP=<0..100> mixes in that % of a sharp (Lanczos)
  *   enlargement of the original instead, which keeps the pixels' grain
  *   (50 = the earlier "method 5").
