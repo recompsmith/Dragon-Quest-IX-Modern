@@ -40,6 +40,8 @@ NET_LIBS ?=
 GENOBJ = $(patsubst $(GEN)/%.c,$(OBJ)/gen/%.o,$(wildcard $(GEN)/*.c))
 GEN7OBJ = $(patsubst $(GEN7)/%.c,$(OBJ)/gen7/%.o,$(wildcard $(GEN7)/*.c))
 RTOBJ = $(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(RT))
+# runtime/base/wfc: its own headers too (objects in $(OBJ)/rt/base/wfc/, same rule as the runtime)
+$(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(filter runtime/base/wfc/%.c,$(RT))): $(wildcard runtime/base/wfc/*.h)
 
 # RES: optional extra objects for the program only, e.g. the Windows icon
 # resource the build makes from the ROM (tools/rom_icon.py)
@@ -102,9 +104,6 @@ $(OBJ)/rt/relay.o: runtime/relay.h runtime/relay_url.h
 $(OBJ)/rt/%.o: runtime/%.c runtime/nds.h runtime/cpu.h runtime/coro.h runtime/frontend.h runtime/version.h runtime/air.h runtime/session.h runtime/hdtext.h runtime/hdsprite.h runtime/uitext.h
 	@mkdir -p $(dir $@)
 	$(CC) -O2 -g -Wall -Wextra -Wno-unused-parameter $(PIC) $(DETERMINISM) $(DEFS) -Iruntime -I$(GEN) -c $< -o $@
-
-# runtime/base/wfc: its own headers too (objects in $(OBJ)/rt/base/wfc/, same rule as the runtime)
-$(patsubst runtime/%.c,$(OBJ)/rt/%.o,$(filter runtime/base/wfc/%.c,$(RT))): $(wildcard runtime/base/wfc/*.h)
 
 clean:
 	rm -rf $(OBJ) $(OUT) $(CORE)
