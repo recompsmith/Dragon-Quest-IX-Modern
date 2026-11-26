@@ -2,7 +2,7 @@
   "$schema": "https://recomplauncher.com/schema/recomplauncher.json",
   "format": 1,
   "name": "Dragon Quest IX Modern",
-  "repo": "romusan495/Dragon-Quest-IX-Modern",
+  "repo": "recompsmith/Dragon-Quest-IX-Modern",
   "game": {
     "kind": "iso",
     "label": "Your own Dragon Quest IX ROM (.nds, or a .zip holding it), dumped from your DS cartridge: the European (YDQP) or USA (YDQE) version."

@@ -16,7 +16,7 @@
 - Keep `backup_copy()` (save-backups copies), its 10-second rule, and the existing `LOG_WARN` on failure.
 - `g_backup_dirty` goes back to 0 only when the new save is fully on disk under its real name.
 - `void backup_flush(void)` signature unchanged (9 callers: `card.c:318` backup_xfer, `autosave.c:85`, `cpu_bios.c:396`, `frontend_sdl.c:6016` and `:6231`, `hosting.c:40`, `main.c:68`, `session.c:1493`; none reads a result).
-- No file touched on Romuald's PC; tests run in the cloud session (`docs/TESTS-CLOUD.md`).
+- No file touched on recompsmith's PC; tests run in the cloud session (`docs/TESTS-CLOUD.md`).
 - No shared file touched (`card.c`, new `savefile.*`, `tests/` belong to Dev; `build.mk` picks `runtime/*.c` by wildcard, so it needs no change).
 
 ## Review Focus
@@ -65,7 +65,7 @@
 ### Task 3: measure the cost of a game save (decides if more is needed)
 
 - [ ] **Step 1 (cloud):** in the smoke run, make the game save once (test input that saves at the church, or autosave `save_now`), with a temporary `LOG_INFO` counter in `backup_flush` (not committed): number of calls and total time spent in `save_file_atomic` for that save.
-- [ ] **Step 2:** If the extra time is under ~200 ms per game save, stop here. Otherwise (decision for Romuald, not built without his OK): keep the atomic write on every flush but do the disk flush (`_commit`/`fsync`) only once the game has stopped writing (e.g. a later flush from a frame hook) — written as a follow-up plan.
+- [ ] **Step 2:** If the extra time is under ~200 ms per game save, stop here. Otherwise (decision for recompsmith, not built without his OK): keep the atomic write on every flush but do the disk flush (`_commit`/`fsync`) only once the game has stopped writing (e.g. a later flush from a frame hook) — written as a follow-up plan.
 
 ### Task 4: review and PR
 
