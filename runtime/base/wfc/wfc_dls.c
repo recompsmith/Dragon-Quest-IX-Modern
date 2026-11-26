@@ -4,8 +4,9 @@
  * (DLS1 format: name, "", attr1, attr2, attr3, size, tab-separated), in
  * order; for YDQE and YDQP its "auction" line becomes the DQVC file of the
  * day (added when the list has none). Without _list.txt, YDQE and YDQP get
- * the built-in list: the quest file and the news when they are in the folder,
- * and the DQVC file of the day. Only listed names can be downloaded. */
+ * the built-in list: the quest file when it is in the folder, the DQVC file
+ * of the day, then the news when it is in the folder. Only listed names can
+ * be downloaded. */
 #include "wfc_ip.h"
 #include "dqvc.h"
 
@@ -121,6 +122,7 @@ static void build_list(List* l, const char* gc) {
         }
         if (has_dqvc(gc) && !auction) add_dqvc(l);
     } else if (has_dqvc(gc)) {
+        add_present(l, gc, "quest52e.bin", "quest");       /* fetched at build time (tools/build-game.sh) */
         add_dqvc(l);
         add_present(l, gc, !strcmp(gc, "YDQE") ? "infomes_47.bin" : "infomes_45.bin", "mes");
     } else {

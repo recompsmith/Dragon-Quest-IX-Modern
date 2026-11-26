@@ -242,18 +242,34 @@ for src in extras/wfc wfc; do
         mkdir -p "game/wfc/$(basename "$g")" && cp "$g"* "game/wfc/$(basename "$g")/"
     done
 done
-# DQVC's news: the one message that survives (Nintendo's last), from the fans'
-# archive of Nintendo's download server. The quests and DQVC's sales are
-# built into the game; the news is Square Enix's text, so it is fetched, not kept here.
+# DQVC's news (the one message that survives, Nintendo's last) and the quest
+# file (Nintendo's last, 2010-06-04), from the fans' archive of Nintendo's
+# download server: Square Enix's data, so fetched, not kept here. The quest
+# file must match Nintendo's bytes; a different one is removed.
 if [ "$REGION" = eur ]; then GC=YDQP; NEWS=infomes_45.bin; else GC=YDQE; NEWS=infomes_47.bin; fi
+DLS1=https://raw.githubusercontent.com/InternalLoss/DLS1-Files/master/$GC
 if [ ! -f game/wfc/$GC/$NEWS ]; then
     mkdir -p game/wfc/$GC
-    if curl -fsSL --max-time 30 -o game/wfc/$GC/$NEWS \
-         https://raw.githubusercontent.com/InternalLoss/DLS1-Files/master/$GC/$NEWS; then
+    if curl -fsSL --max-time 30 -o game/wfc/$GC/$NEWS $DLS1/$NEWS; then
         echo "   DQVC news: fetched"
     else
         rm -f game/wfc/$GC/$NEWS; echo "   DQVC news: not fetched (optional; Sellma just has no news)"
     fi
+fi
+QUEST_SHA=9b88ca481a8ec75fc9163b262c6feab90ddd2b40b42c5964f04d615b2484f307
+sha256_of() { { sha256sum "$1" 2>/dev/null || shasum -a 256 "$1" 2>/dev/null; } | cut -d' ' -f1; }
+if [ ! -f game/wfc/$GC/quest52e.bin ]; then
+    mkdir -p game/wfc/$GC
+    if curl -fsSL --max-time 30 -o game/wfc/$GC/quest52e.bin $DLS1/quest52e.bin; then
+        echo "   DQVC quests: fetched"
+    else
+        echo "   DQVC quests: not fetched (optional; Sellma just has no quests to give)"
+    fi
+fi
+QUEST_GOT=$( [ -f game/wfc/$GC/quest52e.bin ] && sha256_of game/wfc/$GC/quest52e.bin )
+if [ -n "$QUEST_GOT" ] && [ "$QUEST_GOT" != "$QUEST_SHA" ]; then
+    rm -f game/wfc/$GC/quest52e.bin
+    echo "   DQVC quests: the file fetched is not Nintendo's (sha256 differs), removed; Sellma has no quests to give"
 fi
 cat > game/play.bat <<'BAT'
 @echo off
