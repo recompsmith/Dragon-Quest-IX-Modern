@@ -2129,6 +2129,8 @@ static void round_minimap(GlPresent* v, const float* small, int z) {
     if (g_place_plate >= 0 && v->npiece + 6 <= GL_MAX_PIECES && v->alpha > 0.5f) {   /* the place's name (the map's plate at its top right: its letters) */
         float k = 0.62f, w = (float)(g_place_txt[1] - g_place_txt[0] + 2), lw = w * k + 8, lh = 9 * k + 3.5f, lx = cx - lw / 2, ly = cy + R + T + 1.5f;
         if (c >= 2) ly = cy + R + T + 1.5f;
+        if (lx + lw > v->cw - 2) lx = v->cw - 2 - lw;              /* (a long name, the map at the edge: inside the window) */
+        if (lx < 2) lx = 2;
         set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), lx, ly, lw, lh);
         set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), lx, ly, lw, 0.6f);
         set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), lx, ly + lh - 0.6f, lw, 0.6f);
