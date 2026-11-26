@@ -1,6 +1,6 @@
 # Working on this fork
 
-This repository (`romusan495/DQIX-EnhancedEU`) is the single source of truth for
+This repository (`recompsmith/DQIX-EnhancedEU`) is the single source of truth for
 the code. Two folders on the play PC use it:
 
 | Folder | What it is |
@@ -22,7 +22,7 @@ the code. Two folders on the play PC use it:
    are described in `CLAUDE.md` and `docs/roles/`.
 2. Edit, then build (see below) and test with `game\dqix.exe` in the worktree.
 3. Commit on the branch, push it and open a pull request to `main`. It is
-   reviewed, then merged once it builds and Romuald agrees.
+   reviewed, then merged once it builds and recompsmith agrees.
 4. Update the play folder from `main`:
    ```
    cd /d J:\DQIX-Enhanced
