@@ -11,7 +11,7 @@ Lite, restyle visuel des fenêtres et des boîtes de dialogue, maquettes.
   `tools/movie_frames.py`, `runtime/hdmovie.c` / `.h`, `skins/`.
 - Hors git, dans le dossier de jeu : `game\textures`, `game\movies`,
   `game\textures-hd-outil`. Ils ne sont jamais versionnés ; sauvegarde dans
-  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de Romuald.
+  `J:\DQIX-Backups\` avant de les remplacer, et seulement avec l'accord de recompsmith.
 
 ## Partagé
 Voir la liste des fichiers partagés dans `CLAUDE.md` (surtout `gl_render.c`,
