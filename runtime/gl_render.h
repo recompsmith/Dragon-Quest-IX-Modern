@@ -21,6 +21,7 @@ enum { GL_LAYER_HINT,                                 /* a button's sign over th
        GL_LAYER_KEY3,                                 /* a fourth key (the character's creation: L, R, A, B) */
        GL_LAYER_PARTY,                                /* the party's HP and MP, bottom left (partyhud.c) */
        GL_LAYER_KEYBAR,                               /* a row of the player's keys with what they do (keybar.c: Equip) */
+       GL_LAYER_WORDS,                                /* our own words on a modern screen (the skill points' column names) */
        GL_LAYERS };
 
 int gl_render_init(int scale);                        /* 0 on failure (use the software path) */

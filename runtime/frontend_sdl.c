@@ -5780,6 +5780,33 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
         bestiary_piece(v, 3, 156, sy, 64, 13, 30, SX(1010) - 64 * KL, cy, KL);
     }
     if (row < 5) bestiary_piece(v, 3, 0, 20 + 13 * row, 20, 13, 27, SX(16), SY(240 + row * 78 + 39) - 6.5f * KL, KL);   /* the hand: its own colours, over the window's left line */
+    {   /* the columns' names, over the skills (ours: the game has none) */
+        static const char* const NAMES[5][4] = {
+            { "Skill", "Progress", "Added", "Total" },
+            { "Comp\xC3\xA9tence", "Progression", "Ajout", "Total" },
+            { "Fertigkeit", "Fortschritt", "Neu", "Gesamt" },
+            { "Abilit\xC3\xA0", "Progresso", "Aggiunti", "Totale" },
+            { "Habilidad", "Progreso", "A\xC3\xB1" "adidos", "Total" } };
+        int lg = g_fw_language >= 1 && g_fw_language <= 5 ? g_fw_language - 1 : 0;
+        float s = fminf(g_lay_s > 0 ? g_lay_s : 5.625f, 11.25f), u = C * s;   /* (the picture's pixels for a mockup unit) */
+        static uint8_t* pic; static int pw, ph, plg = -1; static float pu; static unsigned pfont;
+        if (ww > 1 && wh > 1 && (lg != plg || u != pu || pfont != text_font_gen())) {
+            int w = (int)(980 * u + 0.5f), h = (int)(66 * u + 0.5f);
+            uint8_t* n = w > 0 && h > 0 ? (uint8_t*)realloc(pic, (size_t)w * h * 4) : NULL;
+            if (n) {
+                pic = n; pw = w; ph = h; plg = lg; pu = u; pfont = text_font_gen();
+                memset(pic, 0, (size_t)w * h * 4);
+                JournalCanvas c = { pic, w, h, u, 0, 0, 0, 0, 980, 66, lg };
+                const float px = 30; const uint32_t grey = 0xB9B9B9; const char* const* nm = NAMES[lg];
+                journal_text(&c, 40, 16, px, grey, nm[0]);
+                journal_text(&c, 240, 16, px, grey, nm[1]);
+                journal_text(&c, 550 - journal_text_width(px, nm[2]) / 2, 16, px, grey, nm[2]);
+                journal_text(&c, 960 - journal_text_width(px, nm[3]), 16, px, grey, nm[3]);
+                gl_set_layer(GL_LAYER_WORDS, pic, pw, ph);
+            }
+        }
+        if (pic) { float* q = v->layer[GL_LAYER_WORDS]; q[0] = SX(50); q[1] = SY(166); q[2] = 980 * C; q[3] = 66 * C; }
+    }
     /* Confirm, the points left */
     modern_window(v, SX(50), SY(656), 980 * C, 100 * C);
     if (confirm) {
