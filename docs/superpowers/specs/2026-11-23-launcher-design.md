@@ -1,14 +1,14 @@
 # Launcher DQIX Modern : description
 
-Date : 2026-11-23. Branche `dev/launcher`. Maquette validée par Romuald : v8 (description validée le 2026-11-23)
+Date : 2026-11-23. Branche `dev/launcher`. Maquette validée par recompsmith : v8 (description validée le 2026-11-23)
 (gardée hors du dépôt, captures à joindre à la PR).
 
 ## Pourquoi
 
 Depuis v3, le jeu télécharge le pack HD en arrière-plan pendant qu'on joue :
-un pack à moitié installé donne un jeu laid, et les joueurs le signalent. Romuald
+un pack à moitié installé donne un jeu laid, et les joueurs le signalent. recompsmith
 veut un launcher comme celui des autres jeux : tout se met à jour **avant** de
-jouer. Dr.Stone (équipe) a dit ce qui compte : « simple et surtout utile » ;
+jouer. TitanFr199 (équipe) a dit ce qui compte : « simple et surtout utile » ;
 Discord, mises à jour récentes listées, mises à jour faites en amont, accès aux
 réglages avant de lancer.
 
@@ -72,7 +72,7 @@ quand tout est installé.
    - RecompLauncher : il fait toujours l'installation (`BUILD.bat --prepare`) ;
      `recomplauncher.json` `start` pointe vers le launcher. Les installs
      RecompLauncher existantes basculent d'elles-mêmes à la mise à jour suivante.
-8. **HD de l'écran titre dans le pack HD** : `DÉCIDÉ (Romuald, 2026-11-23)` : on
+8. **HD de l'écran titre dans le pack HD** : `DÉCIDÉ (recompsmith, 2026-11-23)` : on
    les distribue ; s'il faut les retirer un jour, on les retire.
 
 ## Non-objectifs
@@ -101,7 +101,7 @@ quand tout est installé.
 - Le dépôt ne contient aucune donnée du jeu. Le launcher vit dans `launcher/`
   (C), compilé par `tools/build-game.sh` comme `hd-pack.exe`, sortie
   `game/dqix-launcher.exe` (Windows) / `game/dqix-launcher` (Linux).
-- Tests : rien ne tourne sur le PC de Romuald ; tests cloud (`docs/TESTS-CLOUD.md`).
+- Tests : rien ne tourne sur le PC de recompsmith ; tests cloud (`docs/TESTS-CLOUD.md`).
 - Fichiers partagés touchés (à annoncer au coordinateur) : `tools/build-game.sh`,
   `runtime/frontend_sdl.c` (redirection vers le launcher, `DQIX_LAUNCHER=1`),
   sans doute `build-windows.sh`.
@@ -112,7 +112,7 @@ quand tout est installé.
   (github.com, codeload.github.com, api.github.com, objects.githubusercontent.com),
   tailles bornées, rien d'exécuté depuis un chemin fourni par le réseau.
 
-## Choix techniques (décidés par Claude, Romuald m'a confié la technique)
+## Choix techniques (décidés par Claude, recompsmith m'a confié la technique)
 
 - **C + SDL2 + OpenGL**, le même outillage que le jeu : marche sous Windows,
   Linux, Steam Deck ; léger ; reprend les polices et `runtime/stb_*.h`.
@@ -122,7 +122,7 @@ quand tout est installé.
   remplacer en marche).
 - **Compilé par `build-game.sh`** et non livré tout fait dans le zip :
   l'updater télécharge le zip des sources de `stable`, qui ne contient pas de
-  binaire. Conséquence (à dire à Romuald : je lui avais dit « livré tout fait ») :
+  binaire. Conséquence (à dire à recompsmith : je lui avais dit « livré tout fait ») :
   le launcher existe à partir de la fin de la première installation, ce qui
   colle à son déroulé (installation, puis launcher). Mise à jour du launcher
   par lui-même : sous Windows un exe en marche peut être renommé ;
@@ -175,7 +175,7 @@ quand tout est installé.
   normalement, comme aujourd'hui. La redirection vers le launcher vaut aussi sous
   Linux quand il existe.
 
-- **Hors ligne** (ou GitHub en panne) : `DÉCIDÉ (Romuald, 2026-11-23)` : si le
+- **Hors ligne** (ou GitHub en panne) : `DÉCIDÉ (recompsmith, 2026-11-23)` : si le
   jeu est complet, JOUER s'allume, avec « Hors ligne : mises à jour non
   vérifiées ». Un pack HD incomplet ne s'installe pas (tout ou rien) : le jeu
   part alors sans le pack HD.
@@ -187,17 +187,17 @@ ombres), traduction des textes (rôle Langues), noms des clés internes.
 
 ## Image de fond
 
-Romuald a fourni l'image (2026-11-23) : illustration 1376×768 (ange
+recompsmith a fourni l'image (2026-11-23) : illustration 1376×768 (ange
 célestellien, Observatoire, fygg, château), gardée dans
 `J:\DQIX-Backups\launcher-art\launcher-back.jpg`, jamais dans le dépôt.
-Distribuée dans le pack HD (`DÉCIDÉ (Romuald, 2026-11-23)`), affichée en
+Distribuée dans le pack HD (`DÉCIDÉ (recompsmith, 2026-11-23)`), affichée en
 « cover » avec un dégradé sombre à gauche sous les Nouveautés (maquette v7).
 Sans pack HD : ciel étoilé. Elle entre dans le pack en même temps que la
 prochaine version du pack (coordination avec la PR 167, `hd-pack-2`).
 
-## Premier lancement (`DÉCIDÉ (Romuald, 2026-11-24)`)
+## Premier lancement (`DÉCIDÉ (recompsmith, 2026-11-24)`)
 
-Romuald : « il devra demander où est la ROM pour pouvoir bosser avec au premier
+recompsmith : « il devra demander où est la ROM pour pouvoir bosser avec au premier
 lancement ». Ses trois oui :
 1. **Un launcher tout fait dans le zip de la release**, compilé par GitHub
    Actions : `DQIX Launcher.exe` (+ `SDL2.dll`) à la racine du zip Windows,
@@ -218,7 +218,7 @@ besoin) comme l'autre ; ses polices viennent de `fonts/` du projet tant que
 `cmd.exe` (copie par l'API Windows, puis chemin relatif). Pas de raccourcis ni
 de désinstallation dans le launcher (l'installeur garde ce rôle).
 
-## Téléchargement qui échoue (`DÉCIDÉ (Romuald, 2026-11-24)`)
+## Téléchargement qui échoue (`DÉCIDÉ (recompsmith, 2026-11-24)`)
 
 Un téléchargement (mise à jour ou pack HD) qui casse en cours de route : la barre
 reste rouge avec RÉESSAYER ; en mode **Classique** JOUER s'allume (le jeu est
