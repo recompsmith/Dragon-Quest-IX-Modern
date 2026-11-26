@@ -13,7 +13,7 @@ import os, re, sys, time, html, urllib.request
 
 SITE = "https://retroachievements.org/achievement/%d"
 BADGE = "https://media.retroachievements.org/Badge/%s.png"
-UA = "DQIX-Enhanced trophy pictures (+https://github.com/romusan495/Dragon-Quest-IX-Modern)"
+UA = "DQIX-Enhanced trophy pictures (+https://github.com/recompsmith/Dragon-Quest-IX-Modern)"
 
 # the trophies whose achievement is known (from the set's guide on GitHub,
 # RetroAchievements/guides: Dragon Quest IX)
