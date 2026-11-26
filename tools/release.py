@@ -33,8 +33,8 @@ sys.path.insert(0, HERE)
 from release_lib import (bump_version_h, merged_prs, forbidden_tracked, check_notes,  # noqa: E402
                          check_announce, is_rc_tag, parse_cloud_report, NOTE_LANGS)
 
-PUBLIC_REPO = "romusan495/Dragon-Quest-IX-Modern"
-PRIVATE_REPO = "romusan495/dqix-test-prive"
+PUBLIC_REPO = "recompsmith/Dragon-Quest-IX-Modern"
+PRIVATE_REPO = "recompsmith/dqix-test-prive"
 WATCH_TIMEOUT = 15 * 60
 SIGNATURE = "\U0001F916 Generated with [Claude Code](https://claude.com/claude-code)"
 DEFAULT_ANNOUNCE_DIR = r"J:\DQIX-Passation\annonces"
