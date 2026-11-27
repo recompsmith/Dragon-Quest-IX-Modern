@@ -30,7 +30,7 @@ uint32_t hdtext_tag(uint32_t src2);           /* the tag of a VRAM pixel: src2 =
 #define HDT_WIN      2u                       /* (bit 1) a text window's letter (GlyphBlit): written again unchanged, it keeps its tags */
 
 /* per frame, from the 2D engines */
-typedef struct { int x, y, w; int font, glyph; uint32_t color; int has_color; uint32_t inst; int whole_box; } HdGlyph;   /* glyph: for hdtext_render; whole_box: shown in all its box (hdtext_seen_ink) */
+typedef struct { int x, y, w; int font, glyph; uint32_t color; int has_color; uint32_t inst; int whole_box; int vy0, vy1; } HdGlyph;   /* glyph: for hdtext_render; whole_box: shown in all its box (hdtext_seen_ink); vy0..vy1: the rows of its box seen (a window over the rest) */
 void hdtext_frame_start(void);
 void hdtext_seen(int eng, uint32_t tag, int x, int y, int ink_shown, uint32_t rgb);   /* a letter's pixel shows at (x, y) (its ink in this colour) */
 /* a letter's ink shows at (x, y), where only its ink carries tags (letters drawn into sprites): it shows in all its box */

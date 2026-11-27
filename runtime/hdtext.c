@@ -283,7 +283,7 @@ static HdGlyph* shown(int eng, uint32_t tag, int x, int y) {
     HdGlyph* s = &g_shown[eng][g_nshown[eng]];
     const Glyph* g = &g_glyphs[g_inst[inst].glyph];
     s->inst = inst; s->x = ox; s->y = oy; s->w = g->w; s->font = g->font; s->glyph = g_inst[inst].glyph;
-    s->color = 0; s->has_color = 0; s->whole_box = 0;
+    s->color = 0; s->has_color = 0; s->whole_box = 0; s->vy0 = s->vy1 = y;
     g_shown_hash[eng][h] = ++g_nshown[eng];
     return s;
 }
@@ -291,6 +291,7 @@ static HdGlyph* shown(int eng, uint32_t tag, int x, int y) {
 void hdtext_seen(int eng, uint32_t tag, int x, int y, int ink_shown, uint32_t rgb) {
     g_hdtext_mask[eng][y * 256 + x] = 255;
     HdGlyph* s = shown(eng, tag, x, y);
+    if (s) { if (y < s->vy0) s->vy0 = y; if (y > s->vy1) s->vy1 = y; }
     if (s && ink_shown && !s->has_color) { s->color = rgb; s->has_color = 1; }
 }
 

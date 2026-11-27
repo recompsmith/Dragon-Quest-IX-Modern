@@ -2301,6 +2301,11 @@ static void draw_text(int eng, int top, float W, float wside) {
         float u0 = (float)((sl % per_row) * SLOT_W + 4) / ATLAS, v0 = (float)((sl / per_row) * SLOT_H + 4) / ATLAS;
         float u1 = u0 + (float)(g->w * HDT_R) / ATLAS, v1 = v0 + (float)(12 * HDT_R) / ATLAS;
         float x0 = (float)g->x + dx[i], y0 = (float)g->y, x1 = x0 + (float)g->w, y1 = y0 + 12.0f;
+        if (!g->whole_box && (g->vy0 > g->y || g->vy1 < g->y + 11)) {   /* (a window over part of its box: only the rows seen, not into another letter's box under that window) */
+            float ta = (float)(g->vy0 - g->y) / 12.0f, tb = (float)(g->vy1 + 1 - g->y) / 12.0f;
+            if (ta < 0) ta = 0; if (tb > 1) tb = 1;
+            float vv = v1 - v0; y0 = (float)g->y + 12.0f * ta; y1 = (float)g->y + 12.0f * tb; v1 = v0 + vv * tb; v0 = v0 + vv * ta;
+        }
         float r = (float)((g->color >> 16) & 255) / 255.0f, gr = (float)((g->color >> 8) & 255) / 255.0f, b = (float)(g->color & 255) / 255.0f;
         const float q[6][4] = { { x0, y0, u0, v0 }, { x1, y0, u1, v0 }, { x1, y1, u1, v1 }, { x0, y0, u0, v0 }, { x1, y1, u1, v1 }, { x0, y1, u0, v1 } };
         for (int k = 0; k < 6; k++) {
