@@ -5688,9 +5688,23 @@ static int xmenu_detect(int a_on_top) {
             }
         }
         if (t0 < 0) { t0 = hy - 3; t1 = hy + 3; }
-        if (hm && t1 - t0 > 12) {                                  /* (the HD letters' whole boxes (12 rows) of two lines touching: one run; the hand's line alone) */
-            if (t0 < hy - 6) t0 = hy - 6;
-            if (t1 > hy + 5) t1 = hy + 5;
+        if (hm) {                                                  /* (the HD letters: their boxes, 12 rows a line from the run's top, the hand's line: not the hand's middle, which bobs) */
+            int r0 = -1, r1 = -1;                                  /* (the run of rows with letters nearest the hand's middle) */
+            for (int y = hy - 26, c0 = -1; y <= hy + 15; y++) {
+                int k = 0;
+                if (y >= ly0 && y <= ly1 && y <= hy + 14) for (int x = hx1 + 1; x < end && k < 3; x++) k += hm[y * 256 + x] != 0;
+                if (k >= 3) { if (c0 < 0) c0 = y; continue; }
+                if (c0 >= 0) {
+                    int d = hy < c0 ? c0 - hy : hy >= y ? hy - y + 1 : 0, dn = r0 < 0 ? 999 : hy < r0 ? r0 - hy : hy > r1 ? hy - r1 : 0;
+                    if (d < dn) { r0 = c0; r1 = y - 1; }
+                    c0 = -1;
+                }
+            }
+            if (r0 >= 0 && r1 - r0 >= 9) {
+                int n = (r1 - r0 + 7) / 12, k = (int)floorf((float)(hy - r0) / 12.0f);
+                if (k > n - 1) k = n - 1; if (k < 0) k = 0;
+                t0 = r0 + 12 * k; t1 = t0 + 11;
+            } else if (t1 - t0 > 12) { if (t0 < hy - 6) t0 = hy - 6; if (t1 > hy + 5) t1 = hy + 5; }
         }
         int tx = hx1 + 1;                                         /* (from 2 before its letters: the hand stays out, the band still while the hand moves) */
         for (int found = 0; tx < end && !found; tx++)
@@ -5984,6 +5998,45 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
             if (pic) g_keybar_up = 1;
         }
         if (shown && g_keybar_up) { float* q = v->layer[GL_LAYER_KEYBAR]; q[0] = SX(50); q[1] = SY(956); q[2] = wu * U; q[3] = hu * U; }
+    }
+    {   /* a question over it (Cancel the allocation?, Confirm?): the 3D's dialogue window and its Yes / No
+         * windows in front of ours, where the game has them; the chosen answer's row lit gold, as the skills' */
+        uint32_t dc; memcpy(&dc, &g_io[0], 4);
+        int db[8][4], nd = (dc & 0x108) == 0x108 ? gl_dialog_boxes(db, 8) : 0, side = 0, dlg = -1;
+        gl_wide_shown(&side);
+        for (int i = 0; i < nd; i++) {
+            db[i][0] = db[i][0] - side < 0 ? 0 : db[i][0] - side; db[i][2] = db[i][2] - side > 256 ? 256 : db[i][2] - side;
+            if (db[i][2] - db[i][0] > 120 && (dlg < 0 || db[i][3] > db[dlg][3])) dlg = i;   /* (the dialogue: wide, the lowest) */
+        }
+        if (dlg >= 0) {
+            const float k = v->ch / 192.0f;                        /* (where the game has them over the field: ours over its own, in front of the page) */
+            #define SQ_X(x_) (mid + ((float)(x_) - 128) * k)
+            set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), 0, 0, v->cw, v->ch);   /* (the page dimmed behind the question) */
+            for (int i = 0; i < nd; i++) {
+                const int* b = db[i];
+                if (i != dlg && (b[2] - b[0] < 16 || b[3] - b[1] < 12)) continue;
+                float w = (float)(b[2] - b[0]), h = (float)(b[3] - b[1]), wx = SQ_X(b[0]), wy = b[1] * k;
+                modern_window(v, wx, wy, w * k, h * k);
+                for (int q = 0; q < 5; q++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 16, 0, 0, 1), wx, wy, w * k, h * k);   /* (solid: the page under it not through it) */
+                int hx0 = 999, hx1 = -1, hy0 = 999, hy1 = -1, in = i == dlg;   /* (the hand: the game's yellow, at the window's left edge or, Yes / No in the dialogue's window, inside it) */
+                for (int yy = b[1]; yy < b[3] && yy < 192; yy++)
+                    for (int xx = in ? b[0] : b[0] - 12 < 0 ? 0 : b[0] - 12; xx < (in ? b[2] : b[0] + 6) && xx < 256; xx++) {
+                        uint32_t c = bp[yy * 256 + xx];
+                        if (((c >> 16) & 255) >= 200 && ((c >> 8) & 255) >= 160 && (c & 255) < 80) { if (yy < hy0) hy0 = yy; if (yy > hy1) hy1 = yy; if (xx < hx0) hx0 = xx; if (xx > hx1) hx1 = xx; }
+                    }
+                int hand = hy1 >= 0 && hy1 - hy0 < 12;
+                if (hand) {                                       /* (the chosen answer: lit gold, as the skills' row) */
+                    float cy = (float)(hy0 + hy1) / 2, ly = fmaxf((float)b[1] + 2, cy - 7), ly1 = fminf((float)b[3] - 2, cy + 7);
+                    float lx = in ? (float)hx1 + 2 : (float)b[0] + 2, lx1 = (float)b[2] - 3;
+                    for (int q = 0; q < 3; q++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SQ_X(lx), ly * k, (lx1 - lx) * k, (ly1 - ly) * k);
+                }
+                bestiary_piece(v, 1, (float)b[0] + 2, (float)b[1] + 2, w - 4, h - 4, 3, wx + 2 * k, wy + 2 * k, k);
+                if (in && hand) bestiary_piece(v, 3, (float)hx0 - 1, (float)hy0 - 1, (float)(hx1 - hx0 + 3), (float)(hy1 - hy0 + 3), 27, SQ_X(hx0 - 1), (hy0 - 1) * k, k);   /* (its hand: its own colours, as the skills') */
+                else if (!in && b[0] >= 12) bestiary_piece(v, 1, (float)b[0] - 12, (float)b[1], 13, h, 47, wx - 12 * k, wy, k);   /* the hand over its left edge (its gold alone) */
+            }
+            #undef SQ_X
+            v->layer[GL_LAYER_KEYBAR][2] = 0;                   /* (the keys' bar: not over the question) */
+        }
     }
 #undef SK_LINE
 #undef SX
