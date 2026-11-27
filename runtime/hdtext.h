@@ -36,7 +36,9 @@ void hdtext_seen(int eng, uint32_t tag, int x, int y, int ink_shown, uint32_t rg
 /* a letter's ink shows at (x, y), where only its ink carries tags (letters drawn into sprites): it shows in all its box */
 void hdtext_seen_ink(int eng, uint32_t tag, int x, int y, uint32_t rgb);
 extern uint8_t g_hdtext_mask[2][256 * 192];   /* 255 where a letter's box shows */
-int hdtext_glyphs(int eng, const HdGlyph** out);                    /* this frame's letters, in drawing order */
+int hdtext_glyphs(int eng, const HdGlyph** out);
+extern int hdtext_lines[16][2], hdtext_nlines, hdtext_gap[16][2];   /* hdtext_text's lines: top row, right end */
+int hdtext_text(int eng, int x0, int y0, int x1, int y1, char* out, int max, uint32_t* rgb, int (*icons)[4], int* nicons, int max_icons);   /* the letters in a box as UTF-8 ("\x01": an icon, its box in icons) */                    /* this frame's letters, in drawing order */
 
 /* letters drawn into a texture (GlyphCell): a 4-bit texture, w x h, at p
  * (rows of w / 2 bytes); rgba: it decoded. out (w * HDT_R x h * HDT_R RGBA)

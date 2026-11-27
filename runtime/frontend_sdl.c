@@ -2325,6 +2325,7 @@ static int caract_screen(void) {                                  /* (the equipm
     }
     return 0;
 }
+static int caract_page(GlPresent* v, int ww, int wh);
 static void caract_pieces(GlPresent* v) {
     const float M = 5, t = 0.75f, km = 0.66f, kn = 0.62f, ke = 0.56f, gap = 4, IC = 10;
     #define CA_WIN(X_, Y_, W_, H_) do { set_rect(bestiary_piece(v, 1, 0, 0, 1, 1, 16, 0, 0, 1), X_, Y_, W_, H_); \
@@ -3425,7 +3426,7 @@ static void canvas_layout_for(GlPresent* v, int ww, int wh, int second) {
             v->bot[0] = v->bot[1] = v->bot[2] = v->bot[3] = 0;
             v->topx[0] = v->botx[0] = (float)side; v->topx[1] = v->botx[1] = 256;
             v->alpha = 1.0f; v->front = 0;
-            caract_pieces(v);
+            if (!caract_page(v, ww, wh)) caract_pieces(v);   /* (the HD text off: the game's letters, moved) */
         } else if (page == 2) {
             /* a menu with its 3D model on the top screen (the monster list):
              * both screens whole, side by side, the top one on the left, until it closes */
@@ -5399,7 +5400,7 @@ static void shop_update(int a_on_top) {
     /* (the description's window, canvas_layout_for(), in the list's pixels) */
     int desc_y = g_shop_cut + SHOP_GAP + SHOP_PAD + (SHOP_TH - SHOP_DESC_ICON) / 2;
     g_shop = mapmarks_shop(ok ? g_engine_out[0] : NULL, g_comp_info, desc_y, &rgba, &changed);
-    if (changed) gl_set_icons(g_shop ? rgba : NULL, MAPMARKS_W, MAPMARKS_H);
+    if (changed && !(g_ca_at && g_frame - g_ca_at <= 2)) gl_set_icons(g_shop ? rgba : NULL, MAPMARKS_W, MAPMARKS_H);   /* (Attributes' page: its own icons, not a shop's)*/
     /* the panels' lines (under "Attack", "Number held") stop at their windows'
      * edges: a pixel of them where the field or a window's grey edge is above
      * and under it becomes that */
@@ -5807,7 +5808,7 @@ static void menu_icons_update(void) {
     const uint8_t* rgba = NULL; int changed = 0;
     float cw = 256 + 2 * (float)wide_side_target(), X0 = (cw - 256) / 2;   /* (the overlay: the canvas' middle 256) */
     float chev[8];
-    if (g_bag) {
+    if (g_bag && !(g_ca_at && g_frame - g_ca_at <= 2)) {          /* (Attributes' page first: a list there is not the bag) */
         float x0 = bag_x0(cw), wy = BAG_WY1 + 5;
         path_set(x0 + 1, 13, (const int (*)[4])g_bag_word, 3);
         for (int i = 0; i < g_path_n; i++) { chev[2 * i] = g_path_chev[2 * i] - X0; chev[2 * i + 1] = g_path_chev[2 * i + 1]; }
@@ -5829,7 +5830,7 @@ static void menu_icons_update(void) {
         for (int i = 0; i < g_path_n; i++) { chev[2 * i] = g_path_chev[2 * i] - X0; chev[2 * i + 1] = g_path_chev[2 * i + 1]; }
         changed = mapmarks_menu(T("Menu"), g_path_x[0] - X0, g_path_y, PATH_H, chev, g_path_n, 5.0f, &rgba);
     } else if (mapmarks_menu_off()) changed = 1;
-    if (changed && !g_shop) gl_set_icons(g_bag || g_xmenu || (g_ca_at && g_frame - g_ca_at <= 2) ? rgba : NULL, MAPMARKS_W, MAPMARKS_H);
+    if (changed && (!g_shop || (g_ca_at && g_frame - g_ca_at <= 2))) gl_set_icons(g_bag || g_xmenu || (g_ca_at && g_frame - g_ca_at <= 2) ? rgba : NULL, MAPMARKS_W, MAPMARKS_H);
 }
 
 /* The X menu's window alone in the middle (g_xmenu), as the bag's (the 2D
@@ -5882,6 +5883,474 @@ static void skill_update(int a_on_top) {
     }
     g_skill = 1;
 }
+/* ---- Pages drawn again by us, as their mockups: our windows (pieces) and,
+ * over them, one picture as big as the canvas (GL_LAYER_PAGE) with the words,
+ * lines, bars and arrows. The words are the game's own, read from its letters
+ * (hdtext_text: any language), the numbers from its memory. The picture is
+ * drawn again only when what it shows changes. In the mockups' units: 1932 x
+ * 1152, centred in the canvas. */
+enum { PG_TEXT, PG_BOX, PG_TRI };
+typedef struct { int op, align; float x, y, w, h, px, a; uint32_t rgb; char s[112]; } PgOp;
+static PgOp g_pg[320]; static int g_pgn;
+#define PG_K 1.85f                                                /* (text.c's size: its letters a little smaller than the mockups' at the same size) */
+static void pg_text(float x, float cy, float px, uint32_t rgb, int align, const char* s) {   /* align: 0 left, 1 centred, 2 right; cy its middle */
+    if (!s || !*s || g_pgn >= 320) return;
+    PgOp* o = &g_pg[g_pgn++]; memset(o, 0, sizeof *o);
+    o->op = PG_TEXT; o->x = x; o->y = cy; o->px = px * PG_K; o->rgb = rgb; o->align = align; snprintf(o->s, sizeof o->s, "%s", s);
+}
+static void pg_box(float x, float y, float w, float h, uint32_t rgb, float a) {
+    if (g_pgn >= 320) return;
+    PgOp* o = &g_pg[g_pgn++]; memset(o, 0, sizeof *o);
+    o->op = PG_BOX; o->x = x; o->y = y; o->w = w; o->h = h; o->rgb = rgb; o->a = a;
+}
+static void pg_tri(float x, float cy, float h, int right, uint32_t rgb) {   /* an arrow: pointing right (1) or left (0) */
+    if (g_pgn >= 320) return;
+    PgOp* o = &g_pg[g_pgn++]; memset(o, 0, sizeof *o);
+    o->op = PG_TRI; o->x = x; o->y = cy; o->h = h; o->align = right; o->rgb = rgb; o->a = 1;
+}
+static float pg_width(float px, const char* s) {                 /* (the units a text takes, its icons ("\x01") as wide as its letters are tall) */
+    float w = 0; char seg[112]; int n = 0;
+    for (const char* p = s;; p++) {
+        if (*p == 1 || !*p) { seg[n] = 0; if (n) w += (float)journal_text_width(px * PG_K, seg); n = 0; if (!*p) break; w += px * 1.05f; continue; }
+        if (n < 110) seg[n++] = *p;
+    }
+    return w;
+}
+/* a text with the game's icons in it ("\x01": the next box in ic, a letter's
+ * box on that screen): its words in the picture, its icons as pieces */
+static void pg_words(GlPresent* v, float C, float mid, float oy, float x, float cy, float px, uint32_t rgb, int align, const char* s, int screen, int (*ic)[4], int* nic, int maxic) {
+    float w = pg_width(px, s);
+    if (align == 1) x -= w / 2; else if (align == 2) x -= w;
+    char seg[112]; int n = 0;
+    for (const char* p = s;; p++) {
+        if (*p == 1 || !*p) {
+            seg[n] = 0;
+            if (n) { pg_text(x, cy, px, rgb, 0, seg); x += (float)journal_text_width(px * PG_K, seg); }
+            n = 0;
+            if (!*p) break;
+            if (*nic < maxic) {                                   /* (the icon: as tall as the letters, in its own colours) */
+                const int* b = ic[(*nic)++];
+                float k = px * 1.05f / 12.0f * C;
+                bestiary_piece(v, screen, (float)b[0], (float)b[1], (float)b[2], 12, 49, mid + (x - 966) * C + px * 0.05f * C, oy + (cy - px * 0.52f) * C, k);
+            }
+            x += px * 1.05f;
+            continue;
+        }
+        if (n < 110) seg[n++] = *p;
+    }
+}
+static void pg_draw_tri(const JournalCanvas* c, const PgOp* o) {
+    float h = o->h * c->u, w = h * 0.8f, X = c->ox + o->x * c->u, Y = c->oy + o->y * c->u;
+    uint8_t* px = c->rgba;
+    for (int y = (int)floorf(Y - h / 2); y <= (int)ceilf(Y + h / 2); y++)
+        for (int x = (int)floorf(X); x <= (int)ceilf(X + w); x++) {
+            if (x < 0 || y < 0 || x >= c->pw || y >= c->ph) continue;
+            float t = ((float)x + 0.5f - X) / w;                  /* 0 at the arrow's back, 1 at its point */
+            if (!o->align) t = 1 - t;
+            float half = (1 - t) * h / 2, d = fabsf((float)y + 0.5f - Y);
+            float cov = fminf(fmaxf(half - d + 0.5f, 0), 1) * (t >= 0 && t <= 1);
+            if (cov <= 0) continue;
+            uint8_t* q = &px[((size_t)y * c->pw + x) * 4];
+            float a = cov * o->a, r = (float)((o->rgb >> 16) & 255), g = (float)((o->rgb >> 8) & 255), b = (float)(o->rgb & 255);
+            q[0] = (uint8_t)(r * a + q[0] * (1 - a)); q[1] = (uint8_t)(g * a + q[1] * (1 - a)); q[2] = (uint8_t)(b * a + q[2] * (1 - a)); q[3] = (uint8_t)(255 * a + q[3] * (1 - a));
+        }
+}
+/* the picture: drawn again if its words, lines or size changed; placed over the canvas */
+static void pg_show(GlPresent* v, int ww, int wh, float C, float mid, float oy) {
+    static uint8_t* pic; static int pw, ph; static uint32_t shown_key; static int up;
+    float s = fminf(g_lay_s > 0 ? g_lay_s : 5.625f, 11.25f), u = C * s;
+    uint32_t key = 2166136261u;
+    const uint8_t* b = (const uint8_t*)g_pg;
+    for (size_t i = 0; i < sizeof(PgOp) * (size_t)g_pgn; i++) key = (key ^ b[i]) * 16777619u;
+    key = (key ^ (uint32_t)(u * 1000)) * 16777619u; key = (key ^ text_font_gen()) * 16777619u;
+    if (ww > 1 && wh > 1 && (key != shown_key || !up)) {
+        int w = (int)(1932 * u + 0.5f), h = (int)(1152 * u + 0.5f);
+        uint8_t* n = w > 0 && h > 0 ? (uint8_t*)realloc(pic, (size_t)w * h * 4) : NULL;
+        if (n) {
+            pic = n; pw = w; ph = h; shown_key = key; up = 1;
+            memset(pic, 0, (size_t)w * h * 4);
+            JournalCanvas c = { pic, w, h, u, 0, 0, 0, 0, 1932, 1152, 0 };
+            for (int i = 0; i < g_pgn; i++) {
+                const PgOp* o = &g_pg[i];
+                if (o->op == PG_BOX) journal_box(&c, (int)lroundf(o->x), (int)lroundf(o->y), (int)lroundf(o->w) < 1 ? 1 : (int)lroundf(o->w), (int)lroundf(o->h) < 1 ? 1 : (int)lroundf(o->h), o->rgb, o->a);
+                else if (o->op == PG_TRI) pg_draw_tri(&c, o);
+                else {
+                    float x = o->x, w = o->align ? (float)journal_text_width(o->px, o->s) : 0;
+                    if (o->align == 1) x -= w / 2; else if (o->align == 2) x -= w;
+                    journal_text(&c, (int)lroundf(x), (int)lroundf(o->y - o->px * 0.68f), o->px, o->rgb, o->s);
+                }
+            }
+            gl_set_layer(GL_LAYER_PAGE, pic, pw, ph);
+        }
+    }
+    if (up) { float* q = v->layer[GL_LAYER_PAGE]; q[0] = mid - 966 * C; q[1] = oy; q[2] = 1932 * C; q[3] = 1152 * C; }
+    g_pgn = 0;
+}
+static int pg_last_int(const char* s, char* before, size_t n) {   /* the last number in a text (-1: none); the words before it, its ':' dropped */
+    int at = -1, v = -1;
+    for (int i = (int)strlen(s) - 1; i >= 0; i--) if (s[i] >= '0' && s[i] <= '9') { int j = i; while (j > 0 && s[j - 1] >= '0' && s[j - 1] <= '9') j--; at = j; v = atoi(s + j); break; }
+    if (before) {
+        int e = at < 0 ? (int)strlen(s) : at;
+        while (e > 0 && (s[e - 1] == ' ' || s[e - 1] == ':')) e--;
+        snprintf(before, n, "%.*s", e, s);
+    }
+    return v;
+}
+
+/* a sign drawn beside the game's letters (a job's, a weapon's: not a letter):
+ * the box of the bright pixels, outside the letters' boxes, in [x0, x1) x [y0, y1); 0 none */
+static int pg_sign(int eng, int x0, int y0, int x1, int y1, int b[4]) {
+    const uint32_t* px = g_engine_out[eng];
+    int bx0 = 999, by0 = 999, bx1 = -1, by1 = -1;
+    for (int y = y0 < 0 ? 0 : y0; y < y1 && y < 192; y++)
+        for (int x = x0 < 0 ? 0 : x0; x < x1 && x < 256; x++) {
+            uint32_t c = px[y * 256 + x]; int r = (c >> 16) & 255, g = (c >> 8) & 255, bl = c & 255;
+            if (r + g + bl < 330) continue;
+            if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y;
+        }
+    if (bx1 < 0 || bx1 - bx0 > 16 || by1 - by0 > 14) return 0;
+    b[0] = bx0 - 1; b[1] = by0 - 1; b[2] = bx1 - bx0 + 3; b[3] = by1 - by0 + 3;
+    return 1;
+}
+/* Allocating skill points, as its mockup (maquette-repartition-points-v7):
+ * the title and who at the top; left the skills (name, bar, points added with
+ * the arrows on the chosen one, total before -> after), the points left and
+ * Confirm, the character's stats; right the chosen skill's table (each level,
+ * what it brings, "new" for those the added points reach); the keys under it.
+ * 0: the game's letters not read (the HD text off): skill_pieces' own way. */
+static int skill_page(GlPresent* v, int ww, int wh) {
+    if (!g_hdtext_on) return 0;
+    const uint32_t a = g_sk_at;
+    char title[112], who[112], cf[112], pl[112], name[5][112], tab[3000];
+    int wic[4][4], nwi = 0, tic[24][4], nti = 0;
+    if (!hdtext_text(0, 10, 3, 246, 16, title, sizeof title, NULL, NULL, NULL, 0)) return 0;
+    for (int i = 0; i < 5; i++) hdtext_text(0, 17, 20 + 13 * i, 98, 33 + 13 * i, name[i], sizeof name[i], NULL, NULL, NULL, 0);
+    if (!name[0][0]) return 0;
+    char nm[112] = "", lvs[112] = ""; int sign[4] = { 0 }, has_sign = 0;
+    {   /* who: their name, their job's sign (the widest gap in their line), their level */
+        char all[112];
+        hdtext_text(0, 11, 106, 126, 120, all, sizeof all, NULL, NULL, NULL, 0);
+        int g0 = hdtext_nlines ? hdtext_gap[0][0] : 0, g1 = hdtext_nlines ? hdtext_gap[0][1] : 0;
+        if (g1 - g0 >= 6) {
+            hdtext_text(0, 11, 106, g0 + 1, 120, nm, sizeof nm, NULL, NULL, NULL, 0);
+            hdtext_text(0, g1, 106, 126, 120, lvs, sizeof lvs, NULL, NULL, NULL, 0);
+            has_sign = 1; sign[0] = g0 + 1; sign[1] = 107; sign[2] = g1 - g0 - 1; sign[3] = 13;   /* (its sign: not in the engine's picture, the 2D's own: all the gap)*/
+        } else snprintf(nm, sizeof nm, "%s", all);
+    }
+    (void)wic; (void)nwi; who[0] = 0;
+    hdtext_text(0, 16, 88, 96, 102, cf, sizeof cf, NULL, NULL, NULL, 0);
+    hdtext_text(0, 96, 88, 246, 102, pl, sizeof pl, NULL, NULL, NULL, 0);
+    hdtext_text(1, 12, 12, 244, 182, tab, sizeof tab, NULL, tic, &nti, 24);
+    int lines[16][2], nl_n = hdtext_nlines; memcpy(lines, hdtext_lines, sizeof lines);
+    const float C = fminf(v->ch / 1152.0f, v->cw / 1932.0f), mid = v->cw / 2, oy = (v->ch - 1152 * C) / 2, KL = 4.04f * C;
+#define SX(m) (mid + ((m) - 966) * C)
+#define SY(m) (oy + (m) * C)
+    const uint32_t WHITE = 0xF2F2F2, GREY = 0x9EA2AA, LABEL = 0xB4B8BF, GOLD = 0xE6C25A, LINE = 0x8A8F98;
+    int lg = g_fw_language >= 1 && g_fw_language <= 5 ? g_fw_language - 1 : 0;
+    int row = (int)sk32(a + 0x28), confirm = (g_engine_out[0][102 * 256 + 128] & 0xFFFFFF) == 0x828282 || (g_engine_out[0][102 * 256 + 128] & 0xFFFFFF) == 0xA2A2A2;
+    uint32_t tot[5], add[5], added = 0;
+    for (int i = 0; i < 5; i++) { tot[i] = sk32(a + 0x40 + 4 * i); add[i] = sk32(a + 0x54 + 4 * i); added += add[i]; if (tot[i] > 100) tot[i] = 100; if (add[i] > 100) add[i] = 0; }
+    /* the windows */
+    modern_window(v, SX(50), SY(36), 1832 * C, 104 * C);
+    modern_window(v, SX(50), SY(166), 1080 * C, 470 * C);
+    modern_window(v, SX(50), SY(656), 1080 * C, 100 * C);
+    modern_window(v, SX(50), SY(776), 1080 * C, 160 * C);
+    modern_window(v, SX(1150), SY(166), 732 * C, 770 * C);
+    /* the title; who, at the right in a gold tab: their job's sign, name, level */
+    pg_text(90, 88, 38, WHITE, 0, title);
+    {   float wn = pg_width(34, nm), wl = pg_width(26, lvs), wt = 70 + wn + 18 + wl + 30, x0 = 1850 - wt;
+        for (int k = 0; k < 2; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(x0), SY(52), wt * C, 72 * C);
+        if (has_sign) { float k = 46.0f / (float)sign[3] * C; bestiary_piece(v, 3, (float)sign[0], (float)sign[1], (float)sign[2], (float)sign[3], 49, SX(x0 + 44) - sign[2] * k / 2, SY(88) - sign[3] * k / 2, k); }
+        pg_text(x0 + 70, 88, 34, GOLD, 0, nm);
+        pg_text(x0 + 70 + wn + 18, 90, 26, GOLD, 0, lvs);
+    }
+    /* the skills */
+    {   static const char* const H[5][4] = {
+            { "Skill", "Progress", "Added", "Total" }, { "Comp\xC3\xA9tence", "Progression", "Ajout", "Total" },
+            { "Fertigkeit", "Fortschritt", "Neu", "Gesamt" }, { "Abilit\xC3\xA0", "Progresso", "Aggiunti", "Totale" },
+            { "Habilidad", "Progreso", "A\xC3\xB1" "adidos", "Total" } };
+        pg_text(95, 208, 24, LABEL, 0, H[lg][0]); pg_text(335, 208, 24, LABEL, 0, H[lg][1]);
+        pg_text(800, 208, 24, LABEL, 1, H[lg][2]); pg_text(1100, 208, 24, LABEL, 2, H[lg][3]);
+        pg_box(66, 233, 1048, 1.5f, LINE, 1);
+    }
+    for (int i = 0; i < 5; i++) {
+        float cy = 287 + 78 * i;
+        if (i) pg_box(66, cy - 39, 1048, 1, LINE, 0.6f);
+        if (i == row) for (int k = 0; k < 3; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(66), SY(cy - 36), 1048 * C, 72 * C);
+        pg_text(95, cy, 34, WHITE, 0, name[i]);
+        pg_box(330, cy - 8, 370, 16, 0x8C9098, 1); pg_box(332, cy - 6, 366, 12, 0x1E2024, 1);
+        if (tot[i]) pg_box(332, cy - 6, 366.0f * (float)tot[i] / 100.0f, 12, 0xC9A43E, 1);
+        if (add[i]) pg_box(332 + 366.0f * (float)tot[i] / 100.0f, cy - 6, 366.0f * (float)(add[i] + tot[i] > 100 ? 100 - tot[i] : add[i]) / 100.0f, 12, 0xF6DC7A, 1);
+        char t[48];
+        if (add[i]) snprintf(t, sizeof t, "+%u", add[i]); else snprintf(t, sizeof t, "\xE2\x80\x93");
+        pg_text(800, cy, 32, add[i] ? WHITE : GREY, 1, t);
+        if (i == row) { pg_tri(742, cy, 22, 0, GOLD); pg_tri(842, cy, 22, 1, GOLD); }
+        if (add[i]) snprintf(t, sizeof t, "%u \xE2\x86\x92 %u", tot[i], tot[i] + add[i]); else snprintf(t, sizeof t, "%u", tot[i]);
+        pg_text(1100, cy, 32, WHITE, 2, t);
+    }
+    if (row < 5) bestiary_piece(v, 3, 0, 20 + 13 * row, 20, 13, 27, SX(16), SY(287 + 78 * row) - 6.5f * KL, KL);   /* the hand: its own colours, over the window's left line */
+    /* the points left (of those to share out), Confirm */
+    {   char lab[112]; int left = pg_last_int(pl, lab, sizeof lab);
+        if (left >= 0) {
+            char t[32]; snprintf(t, sizeof t, "%d", left);
+            pg_text(90, 706, 34, WHITE, 0, lab);
+            float x = 90 + pg_width(34, lab) + 30;
+            pg_text(x, 706, 40, GOLD, 0, t);
+            float xr = x + pg_width(40, t) + 14;
+            snprintf(t, sizeof t, "/ %u", (unsigned)left + added);
+            pg_text(xr, 710, 26, GREY, 0, t);
+        }
+        if (confirm && cf[0]) {
+            if (row == 5) {
+                for (int k = 0; k < 3; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(760), SY(664), 362 * C, 84 * C);
+                bestiary_piece(v, 3, 0, 88, 20, 13, 27, SX(720), SY(706) - 6.5f * KL, KL);
+            }
+            pg_text(1100, 706, 34, WHITE, 2, cf);
+        }
+    }
+    /* the character's stats */
+    {   static const char* const F[5] = { "%s's stats", "Caract\xC3\xA9ristiques de %s", "Werte von %s", "Caratteristiche di %s", "Caracter\xC3\xADsticas de %s" };
+        char h[160]; snprintf(h, sizeof h, F[lg], nm);
+        pg_text(90, 816, 26, LABEL, 0, h);
+        pg_box(66, 842, 1048, 1.5f, LINE, 1);
+        for (int j = 0; j < 5; j++) {
+            char k[112], val[112];
+            hdtext_text(0, 11, 126 + 13 * j, 60, 139 + 13 * j, k, sizeof k, NULL, NULL, NULL, 0);
+            hdtext_text(0, 60, 126 + 13 * j, 116, 139 + 13 * j, val, sizeof val, NULL, NULL, NULL, 0);
+            float cx = 160 + 216 * j;
+            pg_text(cx, 876, 24, LABEL, 1, k);
+            pg_text(cx, 912, 32, WHITE, 1, val);
+        }
+    }
+    /* the chosen skill's table: its title, each level and what it brings */
+    {   static const char* const PTS[5] = { "points", "points", "Punkte", "punti", "puntos" };
+        static const char* const NEW[5] = { "new", "nouveau", "neu", "nuovo", "nuevo" };
+        uint32_t t0 = row < 5 ? tot[row] : 0, t1 = row < 5 ? tot[row] + add[row] : 0;
+        char* line = tab; int n = 0, used = 0;
+        while (line && *line && n < 12) {
+            char* nl = strchr(line, '\n'); if (nl) *nl = 0;
+            if (!n) {
+                int k0 = used; pg_words(v, C, mid, oy, 1188, 210, 30, WHITE, 0, line, 1, tic, &k0, nti); used = k0;
+                if (row < 5) { char t[48]; snprintf(t, sizeof t, "%u / 100 %s", t1, PTS[lg]); pg_text(1852, 212, 24, LABEL, 2, t); }
+                pg_box(1166, 233, 700, 1.5f, LINE, 1);
+            } else {
+                const char* p = line; while (*p == ' ') p++;
+                int lv = atoi(p); while (*p >= '0' && *p <= '9') p++; while (*p == ' ') p++;
+                float cy = 279 + 67 * (n - 1);
+                int got = lv && (uint32_t)lv <= t1, isnew = got && (uint32_t)lv > t0;
+                char num[16]; snprintf(num, sizeof num, "%d", lv);
+                if (lv) pg_text(1240, cy, 26, isnew ? GOLD : got ? WHITE : GREY, 2, num);
+                int k0 = used; pg_words(v, C, mid, oy, 1275, cy, 30, got ? WHITE : GREY, 0, p, 1, tic, &k0, nti); used = k0;
+                int sb[4];                                        /* (a sign after its words: the weapon's) */
+                if (n < nl_n && pg_sign(1, lines[n][1] + 1, lines[n][0], lines[n][1] + 18, lines[n][0] + 12, sb)) {
+                    float k = 34.0f / 12.0f * C;
+                    bestiary_piece(v, 0, (float)sb[0], (float)sb[1], (float)sb[2], (float)sb[3], 49, SX(1275 + pg_width(30, p) + 14), SY(cy) - sb[3] * k / 2, k);
+                }
+                if (isnew) pg_text(1850, cy, 22, GOLD, 2, NEW[lg]);
+                pg_box(1166, cy + 33, 700, 1, LINE, 0.5f);
+            }
+            n++;
+            line = nl ? nl + 1 : NULL;
+        }
+    }
+    pg_show(v, ww, wh, C, mid, oy);
+#undef SX
+#undef SY
+    return 1;
+}
+/* Attributes, as its mockup (caracteristiques-maquette-v1): the title and the
+ * categories' tabs (the one shown lit), who; left the character (its 3D model,
+ * its job's plaque), its name, level, sex and job; middle its equipment (each
+ * item's own icon); right the job shown (the arrows: the other jobs it has
+ * played, a badge says which is its own now), its experience and pages, its
+ * stats in two columns, its skills' points as bars; or the other categories'
+ * lists (spells, abilities, attributes). The game's own words (any language),
+ * read from its letters. 0: not read (the HD text off): caract_pieces(). */
+static int ca_split(const char* s, char* a, size_t na, char* b, size_t nb) {   /* "Force : 18" -> "Force", "18" (0: no ':') */
+    const char* c = strrchr(s, ':');
+    if (!c) { snprintf(a, na, "%s", s); b[0] = 0; return 0; }
+    int e = (int)(c - s); while (e > 0 && s[e - 1] == ' ') e--;
+    snprintf(a, na, "%.*s", e, s);
+    c++; while (*c == ' ') c++;
+    snprintf(b, nb, "%s", c);
+    return 1;
+}
+static int caract_page(GlPresent* v, int ww, int wh) {
+    if (!g_hdtext_on) return 0;
+    int e = caract_screen(), et = e == 2 ? 1 : 0, eb = !et;   /* (the top screen: the equipment's engine; the stats the other's) */
+    if (!e) return 0;
+    set_rect(bestiary_piece(v, 1, 0, 0, 1, 1, 7, 0, 0, 1), 5, 5, v->cw - 10, v->ch - 10);   /* the backdrop: one dark window */
+    char idl[4][112], right[1600], left[600], title[112], page[32], nameb[112], eq[8][112];
+    uint32_t rgb = 0xFFFFFF;
+    hdtext_text(eb, 128, 4, 254, 162, right, sizeof right, &rgb, NULL, NULL, 0);
+    if (!right[0]) return 0;
+    for (int i = 0; i < 4; i++) hdtext_text(eb, 2, 6 + 14 * i, 127, 20 + 14 * i, idl[i], sizeof idl[i], NULL, NULL, NULL, 0);
+    hdtext_text(eb, 2, 66, 127, 162, left, sizeof left, NULL, NULL, NULL, 0);
+    hdtext_text(eb, 2, 2, 254, 17, title, sizeof title, NULL, NULL, NULL, 0);
+    hdtext_text(eb, 60, 162, 196, 178, page, sizeof page, NULL, NULL, NULL, 0);
+    hdtext_text(et, 4, 176, 124, 191, nameb, sizeof nameb, NULL, NULL, NULL, 0);
+    for (int k = 0; k < 8; k++) hdtext_text(et, 150, 27 + 20 * k, 254, 44 + 20 * k, eq[k], sizeof eq[k], NULL, NULL, NULL, 0);
+    const float C = fminf(v->ch / 1152.0f, v->cw / 1932.0f), mid = v->cw / 2, oy = (v->ch - 1152 * C) / 2;
+#define SX(m) (mid + ((m) - 966) * C)
+#define SY(m) (oy + (m) * C)
+    const uint32_t WHITE = 0xF2F2F2, GREY = 0x9EA2AA, LABEL = 0xB4B8BF, GOLD = 0xE6C25A, LINE = 0x8A8F98;
+    int lg = g_fw_language >= 1 && g_fw_language <= 5 ? g_fw_language - 1 : 0;
+    /* what is shown: the stats (twelve "name : value" lines at the right), else another category's list */
+    int nstat = 0; for (const char* p = right; *p; p++) nstat += *p == ':';
+    int stats = nstat >= 10 && idl[0][0];
+    int greyed = ((rgb >> 16) & 255) < 170;                       /* (a job not its own now: the game greys it) */
+    static int tab; static char last_title[112];
+    if (stats) tab = 0;
+    else if (strcmp(title, last_title)) { tab = strchr(title, ':') ? 1 : tab >= 1 && tab < 3 ? tab + 1 : 2; }
+    snprintf(last_title, sizeof last_title, "%s", stats ? "" : title);
+    static char own_job[112], own_name[112], own_sex[112];         /* (its own job, its sex: from its first page; the left shows them on the others too) */
+    char nm[112] = "", sex[112] = "", lvl[112] = "", who0[112];
+    {   int k = (int)strlen(nameb), sp = 0; while (k > 0 && sp < 2) { k--; if (nameb[k] == ' ') sp++; }   /* (the name's bar: "Tsumiko Niv. 1") */
+        if (sp == 2) { snprintf(lvl, sizeof lvl, "%s", nameb + k + 1); snprintf(nm, sizeof nm, "%.*s", k, nameb); } else snprintf(nm, sizeof nm, "%s", nameb);
+    }
+    if (stats) {
+        ca_split(idl[0], who0, sizeof who0, sex, sizeof sex);
+        if (!nm[0]) snprintf(nm, sizeof nm, "%s", who0);
+        if (!greyed && idl[1][0]) { snprintf(own_job, sizeof own_job, "%s", idl[1]); snprintf(own_sex, sizeof own_sex, "%s", sex); snprintf(own_name, sizeof own_name, "%s", nm); }
+    }
+    if (strcmp(own_name, nm)) own_job[0] = own_sex[0] = 0;
+    if (!sex[0]) snprintf(sex, sizeof sex, "%s", own_sex);
+    /* the windows */
+    modern_window(v, SX(50), SY(30), 1832 * C, 96 * C);
+    modern_window(v, SX(50), SY(146), 500 * C, 790 * C);
+    modern_window(v, SX(570), SY(146), 520 * C, 790 * C);
+    modern_window(v, SX(1110), SY(146), 772 * C, 790 * C);
+    /* the title, the tabs (A: the next), who */
+    {   static const char* const T[5] = { "Attributes", "Caract\xC3\xA9ristiques", "Werte", "Caratteristiche", "Atributos" };
+        static const char* const TB[5][4] = {
+            { "Stats", "Spells", "Abilities", "Traits" }, { "Statistiques", "Sorts", "Aptitudes", "Attributs" },
+            { "Werte", "Zauber", "F\xC3\xA4higkeiten", "Attribute" }, { "Statistiche", "Magie", "Abilit\xC3\xA0", "Attributi" },
+            { "Estad\xC3\xADsticas", "Hechizos", "Habilidades", "Atributos" } };
+        pg_text(92, 78, 40, WHITE, 0, T[lg]);
+        float x = 92 + pg_width(40, T[lg]) + 70;
+        for (int i = 0; i < 4; i++) {
+            float w = pg_width(28, TB[lg][i]) + 52;
+            if (i == tab) for (int k = 0; k < 3; k++) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 21, 0, 0, 1), SX(x), SY(48), w * C, 60 * C);
+            pg_text(x + w / 2, 78, 28, i == tab ? WHITE : GREY, 1, TB[lg][i]);
+            x += w + 8;
+        }
+        pg_text(1840, 78, 32, WHITE, 2, nm);
+    }
+    /* the character: its model, its job's plaque; under it its name, level, sex, job */
+    {   float k = fminf(440.0f / CA_MW, 600.0f / CA_MH) * C;
+        bestiary_piece(v, 4, CA_MX, CA_MY, CA_MW, CA_MH, 11, SX(300) - CA_MW * k / 2, SY(170), k);   /* (4: the 3D alone) */
+        int j = job_at(0, 20); if (j < 0) j = job_at(1, 20);
+        if (j > 0) g_ca_job = j;
+        if (plaque_layer(g_ca_job)) { float* q = v->layer[GL_LAYER_PLAQUES]; q[0] = SX(460); q[1] = SY(166); q[2] = 70 * C; q[3] = 70 * C; }
+        pg_box(76, 785, 448, 1.5f, LINE, 1);
+        pg_text(86, 833, 38, WHITE, 0, nm);
+        pg_text(514, 833, 36, GOLD, 2, lvl);
+        pg_text(86, 889, 26, LABEL, 0, sex);
+        pg_text(514, 889, 26, LABEL, 2, own_job[0] ? own_job : stats ? idl[1] : "");
+    }
+    /* the equipment */
+    {   static const char* const E[5] = { "Equipment", "\xC3\x89quipement", "Ausr\xC3\xBCstung", "Equipaggiamento", "Equipo" };
+        pg_text(606, 192, 28, GOLD, 0, E[lg]);
+        pg_box(606, 226, 448, 1.5f, LINE, 1);
+        for (int k = 0; k < 8; k++) {                              /* (each slot's sign, the game's: its items' own icons read from memory may be another character's) */
+            float ki = 50.0f / 14.0f * C;
+            bestiary_piece(v, 0, 137, (float)(27 + 20 * k), 14, 14, 32, SX(608), SY(282 + 82 * k - 25), ki);
+            pg_text(680, 282 + 82 * k, 31, WHITE, 0, eq[k]);
+        }
+    }
+    /* the job shown, or the category's title; its pages */
+    int pg_at = 0, pg_n = 0;
+    {   const char* sl = strchr(page, '/'); if (sl) { pg_at = atoi(page); pg_n = atoi(sl + 1); }
+        char job[112], lv[112];
+        snprintf(job, sizeof job, "%s", stats ? idl[1] : title);
+        snprintf(lv, sizeof lv, "%s", stats ? idl[2] : "");
+        float wj = pg_width(34, job), wl = lv[0] ? pg_width(28, lv) + 22 : 0, x = 1496 - (wj + wl) / 2;
+        pg_text(x, 205, 34, stats && greyed ? LABEL : WHITE, 0, job);
+        if (lv[0]) pg_text(x + wj + 22, 207, 28, LABEL, 0, lv);
+        if (pg_n > 1) { pg_tri(1146, 205, 30, 0, GOLD); pg_tri(1822, 205, 30, 1, GOLD); }
+        if (pg_n > 1) for (int i = 0; i < pg_n && i < 8; i++) pg_box(1846 - (pg_n - 1 - i) * 20, 260, 12, 12, i + 1 == pg_at ? GOLD : 0x5B5F66, 1);
+    }
+    if (stats) {
+        static const char* const ON[5] = { "Current job", "Vocation actuelle", "Aktuelle Berufung", "Vocazione attuale", "Vocaci\xC3\xB3n actual" };
+        static const char* const OFF[5] = { "Another job (not current)", "Autre vocation (pas en cours)", "Andere Berufung (nicht aktiv)", "Altra vocazione (non attiva)", "Otra vocaci\xC3\xB3n (no activa)" };
+        static const char* const SP[5] = { "Skill points", "Points de comp\xC3\xA9tence", "Fertigkeitspunkte", "Punti abilit\xC3\xA0", "Puntos de habilidad" };
+        const char* bd = greyed ? OFF[lg] : ON[lg]; float bw = pg_width(22, bd) + 28;
+        pg_box(1146, 248, bw, 38, greyed ? 0x8C8C96 : 0xD8B34A, greyed ? 0.15f : 0.18f);
+        pg_box(1146, 248, bw, 1.5f, greyed ? 0x6C7078 : 0xA8862F, 1); pg_box(1146, 284.5f, bw, 1.5f, greyed ? 0x6C7078 : 0xA8862F, 1);
+        pg_box(1146, 248, 1.5f, 38, greyed ? 0x6C7078 : 0xA8862F, 1); pg_box(1146 + bw - 1.5f, 248, 1.5f, 38, greyed ? 0x6C7078 : 0xA8862F, 1);
+        pg_text(1160, 267, 22, greyed ? LABEL : GOLD, 0, bd);
+        {   char a[112], b[112]; ca_split(idl[3], a, sizeof a, b, sizeof b);
+            float x = 1146 + bw + 40; pg_text(x, 267, 26, LABEL, 0, a); pg_text(x + pg_width(26, a) + 14, 267, 26, WHITE, 0, b); }
+        pg_box(1146, 304, 700, 1.5f, LINE, 1);
+        char* line = right; int r = 0;
+        while (line && *line && r < 12) {                         /* the stats: two columns */
+            char* nl = strchr(line, '\n'); if (nl) *nl = 0;
+            char a[112], b[112];
+            if (ca_split(line, a, sizeof a, b, sizeof b)) {
+                float x = r < 6 ? 1146 : 1520, cy = 340 + 47 * (r % 6);
+                pg_text(x, cy, 29, WHITE, 0, a); pg_text(x + 326, cy, 29, WHITE, 2, b);
+                pg_box(x, cy + 22, 326, 1, LINE, 0.35f);
+                r++;
+            }
+            line = nl ? nl + 1 : NULL;
+        }
+        pg_text(1146, 637, 24, LABEL, 0, SP[lg]);
+        line = left; r = 0;
+        while (line && *line && r < 5) {                          /* the skills: their points as bars (of 100) */
+            char* nl = strchr(line, '\n'); if (nl) *nl = 0;
+            char a[112], b[112];
+            if (ca_split(line, a, sizeof a, b, sizeof b)) {
+                float cy = 680 + 40 * r; int n = atoi(b); if (n > 100) n = 100;
+                pg_text(1146, cy, 27, WHITE, 0, a);
+                pg_box(1344, cy - 7, 414, 14, 0x8C9098, 1); pg_box(1346, cy - 5, 410, 10, 0x1E2024, 1);
+                if (n > 0) pg_box(1346, cy - 5, 410.0f * n / 100.0f, 10, 0xC9A43E, 1);
+                pg_text(1846, cy, 27, WHITE, 2, b);
+                r++;
+            }
+            line = nl ? nl + 1 : NULL;
+        }
+    } else {
+        char all[2400]; int lic[16][4], nli = 0, used = 0; hdtext_text(eb, 2, 17, 254, 162, all, sizeof all, NULL, lic, &nli, 16);
+        pg_box(1146, 304, 700, 1.5f, LINE, 1);
+        char* line = all; int r = 0;
+        while (line && *line && r < 13) {
+            char* nl = strchr(line, '\n'); if (nl) *nl = 0;
+            pg_words(v, C, mid, oy, 1146, 340 + 44 * r, 27, greyed ? LABEL : WHITE, 0, line, 1, lic, &used, nli);
+            r++;
+            line = nl ? nl + 1 : NULL;
+        }
+    }
+    {   /* the keys (keybar.c), under the windows */
+        static const char* const bk[5] = { "Back", "Retour", "Zur\xC3\xBC" "ck", "Indietro", "Volver" };
+        static const char* const ch[5] = { "Other character", "Changer de perso.", "Anderer Charakter", "Altro personaggio", "Otro personaje" };
+        static const char* const ct[5] = { "Next category", "Changer de cat\xC3\xA9gorie", "N\xC3\xA4" "chste Kategorie", "Categoria successiva", "Siguiente categor\xC3\xAD" "a" };
+        static const char* const vo[5] = { "Job", "Vocation", "Berufung", "Vocazione", "Vocaci\xC3\xB3n" };
+        static const char* const rt[5] = { "Turn", "Pivoter", "Drehen", "Ruota", "Girar" };
+        static const int act[5] = { CA_B, CA_Y, CA_A, CA_RIGHT, CA_L };
+        static const char* const* what[5] = { bk, ch, ct, vo, rt };
+        KeybarEntry k[5]; memset(k, 0, sizeof k);
+        int n = pg_n > 1 ? 5 : 4, m = 0;
+        for (int i = 0; i < 5; i++) {
+            if (i == 3 && pg_n <= 1) continue;
+            if (!action_sign(act[i], 0, &k[m].style, &k[m].face, k[m].key, sizeof k[m].key)) k[m].key[0] = 0;
+            k[m].what = what[i][lg]; m++;
+        }
+        const float U = C * 1152.0f / 1080.0f * 1.45f;
+        float s = fminf(g_lay_s > 0 ? g_lay_s : 5.625f, 11.25f);
+        int pw, ph, chg; static float wu, hu; static int shown;
+        if (ww > 1 && wh > 1) {
+            const uint8_t* pic = keybar_picture(k, n, U * s, &pw, &ph, &wu, &hu, &chg);
+            if (pic && (chg || !g_keybar_up)) gl_set_layer(GL_LAYER_KEYBAR, pic, pw, ph);
+            shown = pic != NULL;
+            if (pic) g_keybar_up = 1;
+        }
+        if (shown && g_keybar_up) { float* q = v->layer[GL_LAYER_KEYBAR]; q[0] = SX(50); q[1] = SY(956); q[2] = wu * U; q[3] = hu * U; }
+    }
+    pg_show(v, ww, wh, C, mid, oy);
+#undef SX
+#undef SY
+    return 1;
+}
 static void skill_pieces(GlPresent* v, int ww, int wh) {
     /* in the mockup's units (maquette-repartition-points-v7: 1932 x 1152), as Equip's: the game's letters as big as its list's */
     const uint32_t a = g_sk_at, *bp = g_engine_out[0];
@@ -5892,6 +6361,7 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
 #define SY(m) (oy + (m) * C)
 #define SK_LINE(X_, Y_, W_) set_rect(bestiary_piece(v, 0, 0, 0, 1, 1, 4, 0, 0, 1), SX(X_), SY(Y_), (W_) * C, t)
     int row = (int)sk32(a + 0x28), confirm = (bp[102 * 256 + 128] & 0xFFFFFF) == 0x828282 || (bp[102 * 256 + 128] & 0xFFFFFF) == 0xA2A2A2;
+    if (!skill_page(v, ww, wh)) {                                  /* (the HD text off: the game's own letters, moved) */
     /* the title, who (their job's plaque, their name and level) */
     modern_window(v, SX(50), SY(36), 1832 * C, 104 * C);
     int tx0 = 246, tx1 = 9;
@@ -5976,6 +6446,7 @@ static void skill_pieces(GlPresent* v, int ww, int wh) {
     {   modern_window(v, SX(1050), SY(166), 832 * C, 770 * C);
         float k = fminf(KL, fminf(802 * C / 232.0f, 740 * C / 168.0f));   /* (as big as the list's letters when it can) */
         bestiary_piece(v, 0, 12, 12, 232, 168, 32, SX(1466) - 116 * k, SY(551) - 84 * k, k);   /* (32: its letters, white and grey, its icons) */
+    }
     }
     {   /* the keys (keybar.c), under them */
         static const char* const sk[5] = { "Skill", "Comp\xC3\xA9tence", "Fertigkeit", "Abilit\xC3\xA0", "Habilidad" };

@@ -23,6 +23,7 @@ enum { GL_LAYER_HINT,                                 /* a button's sign over th
        GL_LAYER_KEYBAR,                               /* a row of the player's keys with what they do (keybar.c: Equip) */
        GL_LAYER_SLOTS,                                /* the title's adventure log: which save slot (its name, three dots) */
        GL_LAYER_WORDS,                                /* our own words on a modern screen (the skill points' column names) */
+       GL_LAYER_PAGE,                                 /* a page drawn again by us over its windows: its words, lines, bars (frontend_sdl.c pg_show) */
        GL_LAYERS };
 
 int gl_render_init(int scale);                        /* 0 on failure (use the software path) */

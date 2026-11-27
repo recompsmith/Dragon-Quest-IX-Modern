@@ -322,6 +322,72 @@ int hdtext_glyphs(int eng, const HdGlyph** out) {
     return g_nshown[eng];
 }
 
+/* this frame's letters in a box, as text (UTF-8), for a page we draw again
+ * ourselves: left to right, lines top to bottom ("\n"), a space where two
+ * letters are apart by 3 pixels or more; a letter with no character (an icon:
+ * a weapon's...) "\x01", its box in icons (x, y, w, h); *rgb the first
+ * letter's colour. Returns the bytes written. */
+static int codepoint(const char* s);
+static void put_utf8(char* o, int* n, int max, int cp) {
+    char b[4]; int k;
+    if (cp < 0x80) { b[0] = (char)cp; k = 1; }
+    else if (cp < 0x800) { b[0] = (char)(0xC0 | cp >> 6); b[1] = (char)(0x80 | (cp & 63)); k = 2; }
+    else { b[0] = (char)(0xE0 | cp >> 12); b[1] = (char)(0x80 | ((cp >> 6) & 63)); b[2] = (char)(0x80 | (cp & 63)); k = 3; }
+    if (*n + k >= max) return;
+    memcpy(o + *n, b, (size_t)k); *n += k;
+}
+static int by_place(const void* a, const void* b) {
+    const HdGlyph *p = *(const HdGlyph* const*)a, *q = *(const HdGlyph* const*)b;
+    if (abs(p->y - q->y) > 4) return p->y < q->y ? -1 : 1;
+    return p->x < q->x ? -1 : p->x > q->x;
+}
+int hdtext_lines[16][2], hdtext_nlines, hdtext_gap[16][2];   /* (hdtext_text's lines: each its top row, its last letter's right end) */
+int hdtext_text(int eng, int x0, int y0, int x1, int y1, char* out, int max, uint32_t* rgb, int (*icons)[4], int* nicons, int max_icons) {
+    static const HdGlyph* in[512];
+    int m = 0, n = 0;
+    hdtext_nlines = 0;
+    if (nicons) *nicons = 0;
+    if (rgb) *rgb = 0xFFFFFF;
+    if (max > 0) out[0] = 0;
+    if (eng < 0 || eng > 1 || max <= 0) return 0;
+    for (int i = 0; i < g_nshown[eng] && m < 512; i++) {
+        const HdGlyph* s = &g_shown[eng][i];
+        int cx = s->x + s->w / 2, cy = s->y + 6;
+        if (!s->has_color || cx < x0 || cx >= x1 || cy < y0 || cy >= y1) continue;   /* (its ink shown: not a letter under another window) */
+        int twice = 0;                                             /* (a letter over its shadow: once) */
+        for (int k = 0; k < m && !twice; k++) twice = abs(in[k]->x - s->x) <= 1 && abs(in[k]->y - s->y) <= 1 && in[k]->glyph == s->glyph;
+        if (!twice) in[m++] = s;
+    }
+    if (!m) return 0;
+    qsort(in, (size_t)m, sizeof in[0], by_place);
+    if (rgb && in[0]->has_color) *rgb = in[0]->color & 0xFFFFFF;
+    for (int i = 0; i < m; i++) {
+        const HdGlyph* s = in[i];
+        if (!i || abs(s->y - in[i - 1]->y) > 4) { if (hdtext_nlines < 16) { hdtext_lines[hdtext_nlines][0] = s->y; hdtext_lines[hdtext_nlines][1] = s->x + s->w; hdtext_gap[hdtext_nlines][0] = hdtext_gap[hdtext_nlines][1] = 0; hdtext_nlines++; } }
+        else if (hdtext_nlines) {
+            int* L = hdtext_lines[hdtext_nlines - 1]; int* G = hdtext_gap[hdtext_nlines - 1];
+            if (s->x - L[1] > G[1] - G[0]) { G[0] = L[1]; G[1] = s->x; }
+            if (s->x + s->w > L[1]) L[1] = s->x + s->w;
+        }
+        if (i) {
+            const HdGlyph* p = in[i - 1];
+            if (abs(s->y - p->y) > 4) put_utf8(out, &n, max, '\n');
+            else if (s->x - (p->x + p->w) >= 3) put_utf8(out, &n, max, ' ');
+        }
+        int cp = codepoint(g_glyphs[s->glyph].str);
+        if (cp >= 0x2190) cp = 0;                                /* (arrows, signs: drawn as the game's picture) */
+        if (cp == ' ' && n && out[n - 1] == ' ') continue;
+        if (cp) put_utf8(out, &n, max, cp);
+        else {
+            put_utf8(out, &n, max, 1);
+            if (icons && nicons && *nicons < max_icons) { int* b = icons[(*nicons)++]; b[0] = s->x; b[1] = s->y; b[2] = s->w; b[3] = 12; }
+        }
+    }
+    while (n && out[n - 1] == ' ') n--;
+    out[n] = 0;
+    return n;
+}
+
 /* ---------------------------------------------------------------- letters in textures */
 typedef struct { uint32_t inst; int ox, oy; uint8_t rgba[4]; } CellLetter;
 
