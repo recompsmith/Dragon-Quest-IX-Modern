@@ -189,7 +189,8 @@ static const char* FS_POLY =
     "uniform sampler2D u_tex;\n"
     "uniform int u_highlight; uniform int u_alphatest; uniform float u_aref; uniform int u_wbuf; uniform float u_edgew;\n"
     "uniform int u_part;\n"
-    "uniform int u_sharpa;\n"                    /* smooth textures: a texture whose texels are see-through or not (no alpha levels): cut at half */                       /* 0 every pixel; 1 only solid ones (alpha 31); 2 only see-through ones */
+    "uniform int u_sharpa;\n"
+    "uniform int u_tileclamp;\n"                /* filtered textures (HD, smooth): never mixed with the far side of the texture (see below) */                    /* smooth textures: a texture whose texels are see-through or not (no alpha levels): cut at half */                       /* 0 every pixel; 1 only solid ones (alpha 31); 2 only see-through ones */
     "uniform vec3 u_toon[32];\n"
     "void main() {\n"
     /* distance (in pixels) to each of the triangle's edges that is also an edge of
@@ -204,7 +205,21 @@ static const char* FS_POLY =
     "  if (mode == 2) { ivec3 t = ivec3(u_toon[vc.r] * 31.0 + 0.5); if (u_highlight == 0) vc = t; else vc = ivec3(vc.r); }\n"
     "  ivec3 c = vc; int a = pa;\n"
     "  if (textured) {\n"
-    "    vec4 t = texture(u_tex, v_tex);\n"
+    /* A filtered texture repeats (GL_REPEAT), and at its edge the filter mixes
+     * in the texels of the opposite edge: where a polygon's texture ends at
+     * the texture's edge (a mountain's slope, a wall's top, most of the
+     * scenery: textures holding several pictures), a thin line of the other
+     * picture's colours ran along it (green, blue on the rocks). The DS shows
+     * each texel whole and never does that: the place looked up stays half a
+     * texel (as wide as the filter reaches at this distance) inside its own
+     * copy of the texture. */
+    "    vec4 t;\n"
+    "    if (u_tileclamp != 0) {\n"
+    "      vec2 sz = vec2(textureSize(u_tex, 0)); vec2 dx = dFdx(v_tex), dy = dFdy(v_tex);\n"
+    "      vec2 m = min(0.5 * max(max(abs(dx), abs(dy)) * sz, vec2(1.0)) / sz, vec2(0.5));\n"
+    "      vec2 tl = floor(v_tex);\n"
+    "      t = textureGrad(u_tex, tl + clamp(v_tex - tl, m, vec2(1.0) - m), dx, dy);\n"
+    "    } else t = texture(u_tex, v_tex);\n"
     "    if (u_sharpa != 0) t.a = t.a >= 0.5 ? 1.0 : 0.0;\n"
     "    ivec3 tc = ivec3(t.rgb * 31.0 + 0.5); int ta = int(t.a * 31.0 + 0.5);\n"
     "    if (mode == 1) { c = (tc * ta + vc * (31 - ta)) / 31; a = pa; }\n"
@@ -238,7 +253,6 @@ static const char* FS_POST =
     "uniform int u_fogoff; uniform int u_fogshift; uniform int u_wbuf;\n"
     "uniform float u_ao; uniform float u_aorad;\n"                    /* soft shadows: strength (0 off), reach in pixels */
     "uniform float u_ink; uniform int u_inkstep; uniform float u_inkmin; uniform sampler2D u_odepth; uniform sampler2D u_ocolor;\n"   /* thin dark lines round things: strength (0 off), width, how far behind */
-    "uniform int u_crack;\n"                                          /* the cracks between pieces of the scenery filled (above 1x) */
     /* Soft shadows in corners and under things: a pixel whose neighbours are
      * nearer than itself on both sides, along a line through it, sits in a
      * hollow (where a wall meets the floor, under a counter, behind a pot)
@@ -258,28 +272,6 @@ static const char* FS_POST =
     "    s += clamp(min(d1, d2), 0.0, 0.02) * (1.0 - smoothstep(0.02, 0.06, max(d1, d2))); n += 1.0;\n"   /* (much nearer: another object) */
     "  }\n"
     "  return n > 0.0 ? clamp(s / (n * 0.02), 0.0, 1.0) : 0.0;\n"
-    "}\n"
-    /* Cracks: two pieces of the scenery that meet on the DS (a mountain's
-     * slopes, the ground's tiles) can leave a gap of a pixel or two between
-     * them once drawn larger than 256 x 192: what is far behind shows through
-     * (a dark or blue line), and the outlines mark it. Such a pixel, farther
-     * than both its neighbours along a line, those two at one depth, takes
-     * their colour (and their depth for the outlines). A flat surface at any
-     * angle never has a pixel farther than both its neighbours. */
-    "bool crack(ivec2 p, out ivec2 src) {\n"
-    "  src = p; if (u_crack == 0) return false;\n"
-    "  ivec2 sz = textureSize(u_depth, 0);\n"
-    "  bool drawn = texelFetch(u_attr, p, 0).a > 0.5; float c0 = drawn ? invw(p) : 0.0;\n"
-    "  for (int k = 0; k < 6; k++) {\n"
-    "    ivec2 dir = k < 3 ? ivec2(1, 0) : ivec2(0, 1); int m = k % 3;\n"
-    "    ivec2 a = p - dir * (m == 2 ? 2 : 1), b = p + dir * (m == 1 ? 2 : 1);\n"   /* a gap of 1, or 2 (this pixel either one) */
-    "    if (any(lessThan(a, ivec2(0))) || any(greaterThanEqual(b, sz))) continue;\n"
-    "    if (texelFetch(u_attr, a, 0).a < 0.5 || texelFetch(u_attr, b, 0).a < 0.5) continue;\n"
-    "    float da = invw(a), db = invw(b);\n"
-    "    if (abs(da - db) > 0.01 * max(da, db) || (drawn && c0 > min(da, db) * 0.99)) continue;\n"
-    "    src = a; return true;\n"
-    "  }\n"
-    "  return false;\n"
     "}\n"
     /* Thin dark lines round things: a pixel just behind the edge of something
      * nearer (a pot before the wall, a tree's leaves before the sky...) is
@@ -305,19 +297,17 @@ static const char* FS_POST =
     "}\n"
     "void main() {\n"
     "  ivec2 p = ivec2(gl_FragCoord.xy);\n"
-    "  vec4 c = texelFetch(u_color, p, 0); vec4 at = texelFetch(u_attr, p, 0); float dp = texelFetch(u_depth, p, 0).r;\n"
-    "  ivec2 cs; if (crack(p, cs)) { ivec2 cb = 2 * p - cs; c = texelFetch(u_color, cs, 0); if (cb.x >= 0 && cb.y >= 0) c = mix(c, texelFetch(u_color, min(cb, textureSize(u_color, 0) - 1), 0), 0.5); at = texelFetch(u_attr, cs, 0); dp = texelFetch(u_depth, cs, 0).r; }\n"
+    "  vec4 c = texelFetch(u_color, p, 0); vec4 at = texelFetch(u_attr, p, 0);\n"
     "  if (u_ao > 0.0 && at.a > 0.5 && c.a > 0.0) c.rgb *= 1.0 - u_ao * hollow(p);\n"
     "  if (u_ink > 0.0 && at.a > 0.5 && c.a > 0.0) c.rgb *= 1.0 - u_ink * ink(p);\n"
     "  if (u_edge != 0 && at.b > 0.5 && at.a > 0.5) {\n"
-    "    float id = at.r; float d = dp;\n"
+    "    float id = at.r; float d = texelFetch(u_depth, p, 0).r;\n"
     "    ivec2 sz = textureSize(u_color, 0);\n"
     "    ivec2 o[4] = ivec2[4](ivec2(-u_estep, 0), ivec2(u_estep, 0), ivec2(0, -u_estep), ivec2(0, u_estep));\n"
     "    for (int k = 0; k < 4; k++) {\n"
     "      ivec2 q = p + o[k];\n"
     "      if (q.x < 0 || q.y < 0 || q.x >= sz.x || q.y >= sz.y) continue;\n"
-    "      vec4 an = texelFetch(u_attr, q, 0); ivec2 qs;\n"
-    "      if (crack(q, qs)) continue;\n"                                  /* (a crack beside it: no outline along it) */
+    "      vec4 an = texelFetch(u_attr, q, 0);\n"
     "      if (abs(an.r - id) > 0.004 && d < texelFetch(u_depth, q, 0).r) { int i = int(id * 63.0 + 0.5) >> 3;\n"
     /* with anti-aliasing on, the DS blends a marked edge half and half with what is behind it
      * (the soft outlines of DQIX's characters); the farther neighbour stands in for that */
@@ -327,7 +317,7 @@ static const char* FS_POST =
     "    }\n"
     "  }\n"
     "  if (u_fog != 0 && at.g > 0.5) {\n"
-    "    float d = dp;\n"
+    "    float d = texelFetch(u_depth, p, 0).r;\n"
     "    int z15 = u_wbuf != 0 ? int(d * 4096.0 * 4096.0) >> 9 : int(d * 16777215.0) >> 9;\n"
     "    int step = 0x400 >> u_fogshift; float dens;\n"
     "    if (step <= 0) dens = u_fogtab[31];\n"
@@ -2059,6 +2049,8 @@ static void gl_render_(const Frame3D* f) {
     p_glUniform3fv(p_glGetUniformLocation(prog_poly, "u_toon"), 32, toon);
     GLint loc_texsize = p_glGetUniformLocation(prog_poly, "u_texsize");
     GLint loc_sharpa = p_glGetUniformLocation(prog_poly, "u_sharpa");
+    GLint loc_tileclamp = p_glGetUniformLocation(prog_poly, "u_tileclamp");
+    static int tclamp = -1; if (tclamp < 0) tclamp = getenv("DQIX_TILECLAMP") ? atoi(getenv("DQIX_TILECLAMP")) : 1;   /* tests: 0 as before */
     GLint loc_part = p_glGetUniformLocation(prog_poly, "u_part");
     p_glUniform1i(loc_part, 0);
     p_glEnable(GL_DEPTH_TEST);
@@ -2089,6 +2081,7 @@ static void gl_render_(const Frame3D* f) {
         p_glBindSampler(0, samplers[b->sampler]);
         p_glUniform2f(loc_texsize, b->tw, b->th);
         p_glUniform1i(loc_sharpa, (g_smooth || b->sampler >= 9) && b->alpha1);
+        p_glUniform1i(loc_tileclamp, tclamp && (g_smooth || b->sampler >= 9));
         p_glDepthFunc(b->depth_eq ? GL_EQUAL : GL_LESS);
         p_glDepthMask(b->depth_write ? GL_TRUE : GL_FALSE);
         GLenum prim = b->lines ? GL_LINES : GL_TRIANGLES;
@@ -2193,8 +2186,6 @@ static void gl_render_(const Frame3D* f) {
     { static int eb = -2; if (eb == -2) eb = getenv("DQIX_EDGEBLEND") ? atoi(getenv("DQIX_EDGEBLEND")) : -1;
       p_glUniform1i(p_glGetUniformLocation(prog_post, "u_aa"), (eb < 0 ? g_scale == 1 : eb) && ((disp3d >> 4) & 1)); }
     p_glUniform1i(p_glGetUniformLocation(prog_post, "u_scale"), g_scale);
-    { static int ck = -2; if (ck == -2) ck = getenv("DQIX_CRACKS") ? atoi(getenv("DQIX_CRACKS")) : 1;   /* tests: 0 leaves them */
-      p_glUniform1i(p_glGetUniformLocation(prog_post, "u_crack"), ck && g_scale > 1); }
     float ec[24];
     for (int i = 0; i < 8; i++) { uint16_t c = IO16_(0x330 + i * 2); ec[i * 3] = (float)(c & 31) / 31.0f; ec[i * 3 + 1] = (float)((c >> 5) & 31) / 31.0f; ec[i * 3 + 2] = (float)((c >> 10) & 31) / 31.0f; }
     p_glUniform3fv(p_glGetUniformLocation(prog_post, "u_edgecol"), 8, ec);
